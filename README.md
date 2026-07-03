@@ -123,3 +123,14 @@ DB test: `lentera_test` (lihat `phpunit.xml`).
 ## Deploy ke produksi (VPS)
 Panduan lengkap + **checklist yang perlu disiapkan** (VPS, PostgreSQL, Gemini
 key, SMTP, IP allowlist, HTTPS, Supervisor worker) ada di **[DEPLOYMENT.md](DEPLOYMENT.md)**.
+
+Peta domain (temanlentera.id):
+
+| Host | Untuk |
+|---|---|
+| `console.temanlentera.id` | Konsol admin (SPA + API same-origin), boleh IP-allowlist |
+| `api.temanlentera.id` | API untuk aplikasi mobile & komunitas (publik) |
+| `temanlentera.id` (root) | Landing page — dibuat terpisah nanti |
+
+Satu Laravel app melayani kedua subdomain (dua server block Nginx). Konsol
+same-origin → tanpa CORS, tanpa perubahan kode.

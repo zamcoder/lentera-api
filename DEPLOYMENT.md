@@ -5,6 +5,28 @@ React). Target: Ubuntu 22.04/24.04 LTS. Sesuaikan bila memakai distro/panel lain
 
 ---
 
+## 0. Peta domain
+
+Memakai **temanlentera.id**. Satu Laravel app melayani dua subdomain:
+
+| Host | Untuk | Publik? |
+|---|---|---|
+| **console.temanlentera.id** | Konsol admin (SPA React + API-nya, same-origin) | Hanya admin (boleh IP allowlist) |
+| **api.temanlentera.id** | API untuk aplikasi mobile & komunitas | Publik |
+| **temanlentera.id** (root), `.site`, `.space` | Landing page — **dibuat terpisah nanti**, tidak dipasang di server ini dulu | — |
+
+- Konsol memanggil API **same-origin** (`console.temanlentera.id/api`) → tak
+  perlu CORS untuk konsol.
+- Aplikasi **mobile** memakai `https://api.temanlentera.id/api`.
+- Kedua subdomain menunjuk ke **VPS yang sama** dan disajikan **app yang sama**
+  (dua server block Nginx). Tanpa perubahan kode.
+
+> Cukup butuh satu subdomain? Boleh hanya pakai `console.temanlentera.id` untuk
+> segalanya (konsol + API); mobile lalu memakai `console.temanlentera.id/api`.
+> Tapi memisah `api.*` membuat URL API mobile stabil saat landing dibangun nanti.
+
+---
+
 ## 1. Yang perlu Anda siapkan (checklist)
 
 Siapkan hal berikut **sebelum** mulai:
@@ -12,7 +34,7 @@ Siapkan hal berikut **sebelum** mulai:
 | # | Kebutuhan | Catatan |
 |---|---|---|
 | ☐ | **VPS** Ubuntu 22.04+ | Min. 1 GB RAM (disarankan 2 GB), 1 vCPU, akses `sudo`/SSH |
-| ☐ | **Domain** | Mis. `lentera.app` — arahkan A record ke IP VPS |
+| ☐ | **DNS temanlentera.id** | A record `console` **dan** `api` → IP VPS (lihat §0). Root dibiarkan untuk landing nanti. |
 | ☐ | **PostgreSQL 16** | Terpasang di VPS atau managed DB terpisah |
 | ☐ | **Google Gemini API key** | Untuk moderasi Lapis 2. Ambil di <https://aistudio.google.com/apikey>. Tanpa ini, moderasi AI memakai stub heuristik. |
 | ☐ | **Kredensial SMTP** | Untuk email pemulihan/OTP (mis. Mailgun/Postmark/SES/SMTP biasa). Saat ini kode OTP hanya **ditulis ke log** — produksi butuh pengirim nyata. |
@@ -99,10 +121,12 @@ APP_NAME=Lentera
 APP_ENV=production
 APP_KEY=            # sudah diisi key:generate
 APP_DEBUG=false
-APP_URL=https://lentera.app
+APP_URL=https://api.temanlentera.id
 
-# Origin klien yang boleh (Flutter/konsol lain). Konsol web same-origin,
-# jadi tak wajib; isi bila ada klien lintas-origin. Kosong = izinkan semua.
+# Origin browser lintas-domain yang boleh memanggil API. Konsol same-origin
+# (tak butuh CORS). Isi nanti dengan origin landing page bila ia memanggil API
+# dari browser, mis. https://temanlentera.id. Kosong = izinkan semua origin.
+# Aplikasi mobile native TIDAK terpengaruh CORS.
 CORS_ALLOWED_ORIGINS=
 
 DB_CONNECTION=pgsql
@@ -129,7 +153,7 @@ MAIL_HOST=smtp.provider.com
 MAIL_PORT=587
 MAIL_USERNAME=xxx
 MAIL_PASSWORD=xxx
-MAIL_FROM_ADDRESS=no-reply@lentera.app
+MAIL_FROM_ADDRESS=no-reply@temanlentera.id
 MAIL_FROM_NAME=Lentera
 ```
 
@@ -169,33 +193,35 @@ php artisan event:cache
 
 ---
 
-## 8. Nginx + HTTPS
+## 8. Nginx + HTTPS (dua subdomain, satu app)
 
-`/etc/nginx/sites-available/lentera`:
+Kedua subdomain menunjuk root yang sama (`/var/www/lentera-api/public`). Kita
+buat satu blok PHP-FPM yang dipakai bersama dan dua server block.
+
+`/etc/nginx/sites-available/temanlentera`:
 
 ```nginx
+# Blok PHP-FPM bersama (dipakai kedua server block).
+# (didefinisikan langsung di tiap server block di bawah agar sederhana)
+
+# ---- API publik: api.temanlentera.id (mobile + komunitas) ----
 server {
     listen 80;
-    server_name lentera.app;
+    server_name api.temanlentera.id;
     root /var/www/lentera-api/public;
-
     index index.php;
     charset utf-8;
-
-    # Konsol admin: batasi ke IP tepercaya (IP allowlist §A2).
-    location /mod {
-        allow 203.0.113.10;      # ← IP admin Anda
-        deny all;
-        try_files $uri $uri/ /index.php?$query_string;
-    }
 
     location / {
         try_files $uri $uri/ /index.php?$query_string;
     }
 
+    # Endpoint moderasi tak dipakai klien publik → tutup dari host API.
+    # (Konsol memakainya lewat host console.* di bawah.)
+    location /api/mod { deny all; }
+
     location = /favicon.ico { access_log off; log_not_found off; }
     location = /robots.txt  { access_log off; log_not_found off; }
-
     error_page 404 /index.php;
 
     location ~ \.php$ {
@@ -203,23 +229,56 @@ server {
         fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
         include fastcgi_params;
     }
+    location ~ /\.(?!well-known).* { deny all; }
+}
 
+# ---- Konsol admin: console.temanlentera.id (hanya admin) ----
+server {
+    listen 80;
+    server_name console.temanlentera.id;
+    root /var/www/lentera-api/public;
+    index index.php;
+    charset utf-8;
+
+    # IP allowlist konsol (§A2). Hanya admin yang memakai host ini.
+    # Ganti dengan IP publik Anda; tambah baris `allow` untuk IP lain.
+    allow 203.0.113.10;      # ← IP admin Anda
+    # allow 203.0.113.11;
+    deny all;
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location = /favicon.ico { access_log off; log_not_found off; }
+    error_page 404 /index.php;
+
+    location ~ \.php$ {
+        fastcgi_pass unix:/var/run/php/php8.3-fpm.sock;
+        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+        include fastcgi_params;
+    }
     location ~ /\.(?!well-known).* { deny all; }
 }
 ```
 
 ```bash
-sudo ln -s /etc/nginx/sites-available/lentera /etc/nginx/sites-enabled/
+sudo ln -s /etc/nginx/sites-available/temanlentera /etc/nginx/sites-enabled/
 sudo nginx -t && sudo systemctl reload nginx
 
-# HTTPS otomatis (Let's Encrypt)
-sudo certbot --nginx -d lentera.app
+# HTTPS otomatis (satu sertifikat mencakup kedua subdomain)
+sudo certbot --nginx -d api.temanlentera.id -d console.temanlentera.id
 ```
 
-> Catatan IP allowlist: `/mod` di atas hanya membatasi **halaman** konsol.
-> Karena konsol adalah SPA, batasi juga endpoint API-nya bila perlu keamanan
-> ketat — mis. tambahkan `location /api/mod { allow ...; deny all; ... }`.
-> Perlindungan utama tetap: **2FA TOTP + role admin + ability token**.
+> **IP allowlist konsol:** karena hanya admin yang memakai
+> `console.temanlentera.id`, seluruh host itu boleh dibatasi ke IP admin. Publik
+> tak pernah menyentuhnya (mereka lewat `api.temanlentera.id`). Bila IP admin
+> Anda dinamis/berubah, hapus blok `allow/deny` dan andalkan **2FA TOTP + role
+> admin + ability token** (perlindungan utama yang selalu aktif).
+>
+> Konsol memuat SPA dari `console.temanlentera.id` lalu memanggil
+> `console.temanlentera.id/api/*` (same-origin) — semuanya di host yang
+> ter-allowlist, jadi login & moderasi admin tetap lancar.
 
 ---
 
@@ -308,10 +367,15 @@ php artisan queue:restart
 ## 14. Verifikasi cepat pasca-deploy
 
 ```bash
-curl -s https://lentera.app/up -o /dev/null -w "health: %{http_code}\n"        # 200
-curl -s https://lentera.app/ -o /dev/null -w "konsol: %{http_code}\n"          # 200 (SPA)
-curl -s https://lentera.app/api/mod/queue -o /dev/null -w "api auth: %{http_code}\n"  # 401 (butuh token)
+# API publik (mobile)
+curl -s https://api.temanlentera.id/up -o /dev/null -w "health:   %{http_code}\n"            # 200
+curl -s https://api.temanlentera.id/api/prompt/today -o /dev/null -w "api auth: %{http_code}\n"  # 401 (butuh token)
+curl -s https://api.temanlentera.id/api/mod/queue -o /dev/null -w "mod tutup: %{http_code}\n"    # 403 (ditutup dari host API)
+
+# Konsol admin (dari IP yang di-allowlist)
+curl -s https://console.temanlentera.id/ -o /dev/null -w "konsol:   %{http_code}\n"          # 200 (SPA)
 ```
 
-Buka `https://lentera.app` → login `admin@lentera.test` (sandi baru Anda) →
-setup 2FA → konsol moderasi siap.
+Buka `https://console.temanlentera.id` → login `admin@lentera.test` (sandi baru
+Anda) → setup 2FA → konsol moderasi siap. Aplikasi mobile diarahkan ke
+`https://api.temanlentera.id/api`.
