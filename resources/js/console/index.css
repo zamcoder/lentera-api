@@ -1,0 +1,77 @@
+/* Base konsol Lentera. Token warna/spacing dari tokens.css (jangan hardcode hex). */
+@import './tokens.css';
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+input {
+  font-family: var(--font-body);
+}
+
+/* Scrollbar lembut (mengikuti desain). */
+.lt-scroll::-webkit-scrollbar {
+  width: 9px;
+}
+.lt-scroll::-webkit-scrollbar-thumb {
+  background: rgba(40, 45, 35, 0.16);
+  border-radius: 5px;
+}
+
+/* Interaksi halus. */
+.lt-navitem:hover {
+  background: rgba(92, 129, 102, 0.1) !important;
+}
+.lt-row:hover {
+  background: #efece2 !important;
+}
+.lt-act {
+  transition: filter 0.12s ease, opacity 0.12s ease;
+}
+.lt-act:hover {
+  filter: brightness(0.97);
+}
+.lt-act:active {
+  filter: brightness(0.94);
+}
+
+@keyframes lt-toast {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 12px);
+  }
+  10% {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+  90% {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, 8px);
+  }
+}
+
+@keyframes lt-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=Nunito+Sans:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Spline+Sans+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  body { margin: 0; background: #FAF8F3; }
+  .doc-frame { width: 100%; border-collapse: collapse; }
+  .doc-frame td { padding: 0; }
+  .hdr-space, .ftr-space { display: none; }
+  @page { size: letter; margin: 0; }
+  @media print {
+    html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    html, body { margin: 0; padding: 0; background: #fff; }
+    .doc { max-width: none !important; margin: 0 !important; padding: 0 0.7in !important; box-shadow: none !important; background: #fff !important; }
+    .hdr-space, .ftr-space { display: table-cell; height: 0.7in; }
+    h1, h2, h3, h4 { break-after: avoid; }
+    figure, pre, blockquote, img, svg, tr, .keep { break-inside: avoid; }
+    p, li { orphans: 3; widows: 3; }
+    .screen-only { display: none !important; }
+  }
+</style>
+</helmet>
+
+<button class="screen-only" onClick="{{ print }}" style="position:fixed;right:22px;bottom:22px;z-index:50;display:flex;align-items:center;gap:8px;border:none;cursor:pointer;background:#2F8A5F;color:#fff;font-family:'Nunito Sans',sans-serif;font-weight:700;font-size:14px;padding:12px 18px;border-radius:999px;box-shadow:0 8px 22px rgba(47,138,95,.34);">↓ Simpan PDF</button>
+
+<main class="doc" style="box-sizing:border-box;max-width:8.5in;margin:0 auto;background:#FAF8F3;padding:66px clamp(24px,5vw,0.78in) 120px;font-family:'Nunito Sans',sans-serif;color:#2B342C;font-size:15.5px;line-height:1.7;">
+<table class="doc-frame" role="presentation"><thead><tr><td class="hdr-space"></td></tr></thead><tbody><tr><td>
+
+<!-- ============ COVER ============ -->
+<div style="display:flex;align-items:center;gap:11px;margin-bottom:30px;">
+  <div style="width:30px;height:30px;border-radius:9px;background:#2F8A5F;display:flex;align-items:center;justify-content:center;">
+    <div style="width:13px;height:13px;border-radius:50%;background:#FCE7B8;box-shadow:0 0 10px 2px rgba(252,231,184,.7);"></div>
+  </div>
+  <span style="font-family:'Spline Sans Mono',monospace;font-size:13px;font-weight:600;letter-spacing:.04em;color:#28332B;">Lentera</span>
+  <span style="font-family:'Spline Sans Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#A6B0A8;margin-left:auto;">Dokumen Rencana</span>
+</div>
+
+<div style="font-family:'Spline Sans Mono',monospace;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:#2F8A5F;font-weight:600;margin-bottom:16px;">Rencana Produk · v1</div>
+<h1 style="font-family:'Newsreader',serif;font-weight:500;font-size:46px;line-height:1.08;letter-spacing:-.02em;color:#16241B;margin:0 0 20px;text-wrap:balance;">Rekap Harian, Komunitas &amp; Go&nbsp;Public</h1>
+<p style="font-size:18.5px;line-height:1.55;color:#48564D;margin:0 0 26px;max-width:60ch;">Memperluas Lentera dari jurnal pribadi yang tenang menjadi ruang bersama yang aman — tanpa kehilangan ketenangan dan privasi yang jadi inti aplikasi ini.</p>
+<div style="display:flex;flex-wrap:wrap;gap:8px 10px;font-family:'Spline Sans Mono',monospace;font-size:11.5px;color:#6E7B71;">
+  <span style="background:#fff;border:1px solid #E7E3DA;border-radius:999px;padding:5px 12px;">30 Juni 2026</span>
+  <span style="background:#fff;border:1px solid #E7E3DA;border-radius:999px;padding:5px 12px;">Status: Draft untuk diskusi</span>
+  <span style="background:#fff;border:1px solid #E7E3DA;border-radius:999px;padding:5px 12px;">Belum prototipe</span>
+</div>
+
+<!-- mission quote -->
+<blockquote class="keep" style="margin:34px 0 8px;padding:24px 26px;background:#F1F6F2;border:1px solid #D7E6DC;border-left:4px solid #2F8A5F;border-radius:14px;">
+  <p style="margin:0;font-family:'Newsreader',serif;font-style:italic;font-size:21px;line-height:1.5;color:#23332A;">"Pertarungan yang tak pernah selesai adalah melawan diri sendiri."</p>
+  <p style="margin:12px 0 0;font-size:14.5px;color:#5B6A60;">Lentera ada untuk menemani pertarungan itu — dan sebentar lagi, agar tak ada yang menghadapinya sendirian.</p>
+</blockquote>
+
+<!-- ============ 00 RINGKASAN ============ -->
+<section style="margin-top:50px;">
+  <div style="font-family:'Spline Sans Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#A6B0A8;font-weight:600;margin-bottom:10px;">00 — Ringkasan</div>
+  <h2 style="font-family:'Newsreader',serif;font-weight:500;font-size:31px;line-height:1.15;color:#1E2A22;margin:0 0 16px;letter-spacing:-.01em;text-wrap:balance;">Tiga langkah, satu arah</h2>
+  <p style="font-size:16.5px;line-height:1.65;color:#48564D;margin:0 0 22px;max-width:66ch;">Rencana ini menambah tiga lapisan baru di atas Lentera yang sudah ada. Ketiganya dirancang bertahap: yang paling aman dirilis lebih dulu, yang paling sensitif (data publik) dibangun dengan pondasi privasi &amp; moderasi yang matang.</p>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-top:8px;">
+    <div class="keep" style="background:#fff;border:1px solid #E7E3DA;border-radius:16px;padding:20px;">
+      <div style="font-family:'Spline Sans Mono',monospace;font-size:12px;color:#2F8A5F;font-weight:600;margin-bottom:9px;">01</div>
+      <div style="font-family:'Newsreader',serif;font-size:19px;color:#1E2A22;margin-bottom:6px;">Hari Ini</div>
+      <p style="margin:0;font-size:13.5px;line-height:1.55;color:#5B6A60;">Rekap harian otomatis — apa saja yang terjadi, siapa yang mengisi &amp; menguras, mood &amp; memori.</p>
+    </div>
+    <div class="keep" style="background:#fff;border:1px solid #E7E3DA;border-radius:16px;padding:20px;">
+      <div style="font-family:'Spline Sans Mono',monospace;font-size:12px;color:#6E5BB0;font-weight:600;margin-bottom:9px;">02</div>
+      <div style="font-family:'Newsreader',serif;font-size:19px;color:#1E2A22;margin-bottom:6px;">Komunitas</div>
+      <p style="margin:0;font-size:13.5px;line-height:1.55;color:#5B6A60;">Ruang bersama yang hangat &amp; aman — menyebar aura positif, meredam yang negatif.</p>
+    </div>
+    <div class="keep" style="background:#fff;border:1px solid #E7E3DA;border-radius:16px;padding:20px;">
+      <div style="font-family:'Spline Sans Mono',monospace;font-size:12px;color:#C9794A;font-weight:600;margin-bottom:9px;">03</div>
+      <div style="font-family:'Newsreader',serif;font-size:19px;color:#1E2A22;margin-bottom:6px;">Go Public</div>
+      <p style="margin:0;font-size:13.5px;line-height:1.55;color:#5B6A60;">Akun &amp; registrasi agar aplikasi bisa dirilis ke umum, dengan pemulihan yang manusiawi.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 01 PRINSIP ============ -->
+<section style="margin-top:54px;">
+  <div style="font-family:'Spline Sans Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#A6B0A8;font-weight:600;margin-bottom:10px;">01 — Prinsip</div>
+  <h2 style="font-family:'Newsreader',serif;font-weight:500;font-size:31px;line-height:1.15;color:#1E2A22;margin:0 0 16px;letter-spacing:-.01em;text-wrap:balance;">Yang tidak bisa ditawar</h2>
+  <p style="font-size:16.5px;line-height:1.65;color:#48564D;margin:0 0 20px;max-width:66ch;">Setiap keputusan desain di dokumen ini tunduk pada lima prinsip ini. Kalau sebuah fitur melanggar salah satunya, fitur itu yang berubah — bukan prinsipnya.</p>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+    <div class="keep" style="display:flex;gap:13px;background:#fff;border:1px solid #E7E3DA;border-radius:14px;padding:16px 18px;">
+      <span style="flex:none;font-family:'Newsreader',serif;font-size:20px;color:#2F8A5F;line-height:1;">A</span>
+      <div><div style="font-weight:700;color:#28332B;margin-bottom:2px;">Tenang dulu</div><div style="font-size:13.5px;color:#5B6A60;line-height:1.5;">Tidak ada metrik yang bikin cemas — tanpa jumlah pengikut, like publik, atau peringkat.</div></div>
+    </div>
+    <div class="keep" style="display:flex;gap:13px;background:#fff;border:1px solid #E7E3DA;border-radius:14px;padding:16px 18px;">
+      <span style="flex:none;font-family:'Newsreader',serif;font-size:20px;color:#2F8A5F;line-height:1;">B</span>
+      <div><div style="font-weight:700;color:#28332B;margin-bottom:2px;">Privasi sebagai bawaan</div><div style="font-size:13.5px;color:#5B6A60;line-height:1.5;">Jurnal pribadi tetap milik pengguna. Tidak ada yang pindah ke publik tanpa tindakan sadar.</div></div>
+    </div>
+    <div class="keep" style="display:flex;gap:13px;background:#fff;border:1px solid #E7E3DA;border-radius:14px;padding:16px 18px;">
+      <span style="flex:none;font-family:'Newsreader',serif;font-size:20px;color:#2F8A5F;line-height:1;">C</span>
+      <div><div style="font-weight:700;color:#28332B;margin-bottom:2px;">Anti-toxic by design</div><div style="font-size:13.5px;color:#5B6A60;line-height:1.5;">Komunitas hanya boleh menambah aura positif. Negativitas disaring sebelum sampai ke orang lain.</div></div>
+    </div>
+    <div class="keep" style="display:flex;gap:13px;background:#fff;border:1px solid #E7E3DA;border-radius:14px;padding:16px 18px;">
+      <span style="flex:none;font-family:'Newsreader',serif;font-size:20px;color:#2F8A5F;line-height:1;">D</span>
+      <div><div style="font-weight:700;color:#28332B;margin-bottom:2px;">Tidak menghakimi</div><div style="font-size:13.5px;color:#5B6A60;line-height:1.5;">Bahasa hangat, ramah, tanpa label. Saat seseorang rapuh, aplikasi merangkul — bukan memblokir dingin.</div></div>
+    </div>
+    <div class="keep" style="display:flex;gap:13px;background:#fff;border:1px solid #E7E3DA;border-radius:14px;padding:16px 18px;grid-column:1 / -1;">
+      <span style="flex:none;font-family:'Newsreader',serif;font-size:20px;color:#2F8A5F;line-height:1;">E</span>
+      <div><div style="font-weight:700;color:#28332B;margin-bottom:2px;">Gratis &amp; mudah dijangkau</div><div style="font-size:13.5px;color:#5B6A60;line-height:1.5;">Untuk saat ini tanpa biaya. Tujuannya orang yang sedang berjuang melawan dirinya sendiri bisa berkeluh kesah dan ditemani — bukan jadi sumber pendapatan.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 02 HARI INI ============ -->
+<section style="margin-top:58px;">
+  <div style="font-family:'Spline Sans Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#2F8A5F;font-weight:600;margin-bottom:10px;">02 — Fitur baru</div>
+  <h2 style="font-family:'Newsreader',serif;font-weight:500;font-size:31px;line-height:1.15;color:#1E2A22;margin:0 0 16px;letter-spacing:-.01em;text-wrap:balance;">Tab "Hari Ini" — Rekap Harian</h2>
+  <p style="font-size:16.5px;line-height:1.65;color:#48564D;margin:0 0 10px;max-width:66ch;">Sebuah tab baru di navigasi bawah (Beranda · <strong>Hari Ini</strong> · Orang · Atur). Isinya jawaban atas satu pertanyaan: <em>"Hari ini, apa saja yang terjadi?"</em> — dirangkai otomatis dari momen yang sudah kamu catat, jadi pengguna tidak perlu menulis ulang.</p>
+  <p style="font-size:14px;line-height:1.6;color:#6E7B71;margin:0 0 4px;max-width:66ch;font-style:italic;">Enam modul menyusun tab ini, dari atas ke bawah:</p>
+
+  <!-- modules -->
+  <div style="margin-top:14px;">
+    <div class="keep" style="display:flex;gap:16px;padding:16px 0;border-top:1px solid #E7E3DA;">
+      <div style="flex:none;width:30px;height:30px;border-radius:9px;background:#E8F3EC;color:#2F8A5F;display:flex;align-items:center;justify-content:center;font-family:'Spline Sans Mono',monospace;font-size:13px;font-weight:600;">1</div>
+      <div style="flex:1;"><div style="font-weight:700;color:#28332B;font-size:15.5px;margin-bottom:3px;">Auto-rekap</div><div style="color:#5B6A60;font-size:14.5px;line-height:1.6;">AI merangkum seluruh momen hari ini jadi satu paragraf hangat: "Hari yang campur aduk — Ibu menelepon dan itu menghangatkan, tapi rapat dengan Pak Budi cukup menguras."</div><div style="margin-top:7px;font-family:'Spline Sans Mono',monospace;font-size:10.5px;color:#A6B0A8;letter-spacing:.05em;">SUMBER · catatan hari ini · diproses di perangkat bila memungkinkan</div></div>
+    </div>
+    <div class="keep" style="display:flex;gap:16px;padding:16px 0;border-top:1px solid #E7E3DA;">
+      <div style="flex:none;width:30px;height:30px;border-radius:9px;background:#E8F3EC;color:#2F8A5F;display:flex;align-items:center;justify-content:center;font-family:'Spline Sans Mono',monospace;font-size:13px;font-weight:600;">2</div>
+      <div style="flex:1;"><div style="font-weight:700;color:#28332B;font-size:15.5px;margin-bottom:3px;">Tiga baris malam</div><div style="color:#5B6A60;font-size:14.5px;line-height:1.6;">Ritual penutup hari: satu hal yang <strong>disyukuri</strong>, satu yang <strong>menguras</strong>, satu harapan untuk <strong>besok</strong>. Cepat, ringan, menutup hari dengan tenang.</div><div style="margin-top:7px;font-family:'Spline Sans Mono',monospace;font-size:10.5px;color:#A6B0A8;letter-spacing:.05em;">SUMBER · input cepat · 3 kolom</div></div>
+    </div>
+    <div class="keep" style="display:flex;gap:16px;padding:16px 0;border-top:1px solid #E7E3DA;">
+      <div style="flex:none;width:30px;height:30px;border-radius:9px;background:#E8F3EC;color:#2F8A5F;display:flex;align-items:center;justify-content:center;font-family:'Spline Sans Mono',monospace;font-size:13px;font-weight:600;">3</div>
+      <div style="flex:1;"><div style="font-weight:700;color:#28332B;font-size:15.5px;margin-bottom:3px;">Mood hari ini</div><div style="color:#5B6A60;font-size:14.5px;line-height:1.6;">Satu ketukan untuk menandai suasana hati keseluruhan. Mengalir ke kalender memori &amp; grafik tren di Beranda.</div><div style="margin-top:7px;font-family:'Spline Sans Mono',monospace;font-size:10.5px;color:#A6B0A8;letter-spacing:.05em;">SUMBER · skala mood · 5 tingkat</div></div>
+    </div>
+    <div class="keep" style="display:flex;gap:16px;padding:16px 0;border-top:1px solid #E7E3DA;">
+      <div style="flex:none;width:30px;height:30px;border-radius:9px;background:#E8F3EC;color:#2F8A5F;display:flex;align-items:center;justify-content:center;font-family:'Spline Sans Mono',monospace;font-size:13px;font-weight:600;">4</div>
+      <div style="flex:1;"><div style="font-weight:700;color:#28332B;font-size:15.5px;margin-bottom:3px;">Highlight &amp; lowlight</div><div style="color:#5B6A60;font-size:14.5px;line-height:1.6;">Dua momen yang menonjol hari ini — puncak dan lembah. Dipilih AI dari catatan, bisa diganti manual.</div><div style="margin-top:7px;font-family:'Spline Sans Mono',monospace;font-size:10.5px;color:#A6B0A8;letter-spacing:.05em;">SUMBER · momen syukur tertinggi + batas terberat</div></div>
+    </div>
+    <div class="keep" style="display:flex;gap:16px;padding:16px 0;border-top:1px solid #E7E3DA;">
+      <div style="flex:none;width:30px;height:30px;border-radius:9px;background:#E8F3EC;color:#2F8A5F;display:flex;align-items:center;justify-content:center;font-family:'Spline Sans Mono',monospace;font-size:13px;font-weight:600;">5</div>
+      <div style="flex:1;"><div style="font-weight:700;color:#28332B;font-size:15.5px;margin-bottom:3px;">Energi sosial</div><div style="color:#5B6A60;font-size:14.5px;line-height:1.6;">Siapa yang <strong>mengisi</strong> vs siapa yang <strong>menguras</strong> hari ini — dua kolom kecil dari orang yang ditandai. Membantu sadar pola relasi tanpa menghakimi.</div><div style="margin-top:7px;font-family:'Spline Sans Mono',monospace;font-size:10.5px;color:#A6B0A8;letter-spacing:.05em;">SUMBER · tag orang + tipe (syukur/batas)</div></div>
+    </div>
+    <div class="keep" style="display:flex;gap:16px;padding:16px 0;border-top:1px solid #E7E3DA;border-bottom:1px solid #E7E3DA;">
+      <div style="flex:none;width:30px;height:30px;border-radius:9px;background:#E8F3EC;color:#2F8A5F;display:flex;align-items:center;justify-content:center;font-family:'Spline Sans Mono',monospace;font-size:13px;font-weight:600;">6</div>
+      <div style="flex:1;"><div style="font-weight:700;color:#28332B;font-size:15.5px;margin-bottom:3px;">Kalender memori bulanan</div><div style="color:#5B6A60;font-size:14.5px;line-height:1.6;">Grid sebulan, tiap hari diwarnai mood-nya. Ketuk satu hari untuk membuka rekapnya. Memberi gambaran besar perjalanan emosi.</div><div style="margin-top:7px;font-family:'Spline Sans Mono',monospace;font-size:10.5px;color:#A6B0A8;letter-spacing:.05em;">SUMBER · agregasi mood harian per bulan</div></div>
+    </div>
+  </div>
+  <div class="keep" style="margin-top:18px;background:#EFEAF8;border:1px solid #DED3F0;border-radius:14px;padding:16px 18px;">
+    <div style="font-family:'Spline Sans Mono',monospace;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#6E5BB0;font-weight:600;margin-bottom:6px;">Catatan privasi</div>
+    <p style="margin:0;font-size:14px;line-height:1.6;color:#4B4068;">Seluruh tab "Hari Ini" bekerja dari data <strong>pribadi</strong>. Tidak butuh akun, tidak butuh internet, dan tidak pernah menyentuh komunitas — kecuali pengguna sengaja membagikan satu momen (lihat §05).</p>
+  </div>
+</section>
+
+<!-- ============ 03 KOMUNITAS ============ -->
+<section style="margin-top:58px;">
+  <div style="font-family:'Spline Sans Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#6E5BB0;font-weight:600;margin-bottom:10px;">03 — Fitur baru</div>
+  <h2 style="font-family:'Newsreader',serif;font-weight:500;font-size:31px;line-height:1.15;color:#1E2A22;margin:0 0 16px;letter-spacing:-.01em;text-wrap:balance;">Komunitas — agar tak sendirian</h2>
+  <p style="font-size:16.5px;line-height:1.65;color:#48564D;margin:0 0 20px;max-width:66ch;">Sebuah ruang publik yang sengaja dibuat lembut. Tujuannya satu: <strong>orang seperti kita tidak merasa sendirian</strong> — saling menyebar kekuatan positif, dan tidak ada tempat bagi aura negatif untuk tumbuh. Lima permukaan menyusunnya:</p>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:13px;">
+    <div class="keep" style="background:#fff;border:1px solid #E7E3DA;border-radius:16px;padding:18px;">
+      <div style="font-weight:800;color:#28332B;font-size:15.5px;margin-bottom:5px;">🌾 Dinding Syukur</div>
+      <p style="margin:0;font-size:13.8px;line-height:1.55;color:#5B6A60;">Aliran kiriman singkat berisi rasa syukur dari siapa saja. Mengalir tenang seperti sungai, tanpa angka, tanpa kompetisi.</p>
+    </div>
+    <div class="keep" style="background:#fff;border:1px solid #E7E3DA;border-radius:16px;padding:18px;">
+      <div style="font-weight:800;color:#28332B;font-size:15.5px;margin-bottom:5px;">🤲 Kirim kekuatan</div>
+      <p style="margin:0;font-size:13.8px;line-height:1.55;color:#5B6A60;">Kirim satu kalimat penyemangat ke orang asing yang sedang berat. Anonim, sekali kirim, tanpa balasan — murni memberi.</p>
+    </div>
+    <div class="keep" style="background:#fff;border:1px solid #E7E3DA;border-radius:16px;padding:18px;">
+      <div style="font-weight:800;color:#28332B;font-size:15.5px;margin-bottom:5px;">☀️ Prompt bersama harian</div>
+      <p style="margin:0;font-size:13.8px;line-height:1.55;color:#5B6A60;">Satu pertanyaan tiap hari untuk semua ("Kebaikan kecil apa yang kamu terima hari ini?"). Membuat kebersamaan tanpa harus saling kenal.</p>
+    </div>
+    <div class="keep" style="background:#fff;border:1px solid #E7E3DA;border-radius:16px;padding:18px;">
+      <div style="font-weight:800;color:#28332B;font-size:15.5px;margin-bottom:5px;">🫂 Lingkaran kecil bertema</div>
+      <p style="margin:0;font-size:13.8px;line-height:1.55;color:#5B6A60;">Grup mungil bertema (mis. "menjaga batas", "berdamai dengan keluarga"). Intim, terbatas, lebih aman daripada ruang besar.</p>
+    </div>
+    <div class="keep" style="background:#fff;border:1px solid #E7E3DA;border-radius:16px;padding:18px;grid-column:1 / -1;">
+      <div style="font-weight:800;color:#28332B;font-size:15.5px;margin-bottom:5px;">💛 Reaksi hangat — bukan komentar</div>
+      <p style="margin:0;font-size:13.8px;line-height:1.55;color:#5B6A60;max-width:70ch;">Satu-satunya cara merespons adalah reaksi lembut (peluk, kekuatan, "aku paham"). <strong>Tidak ada kolom komentar</strong> — menghapus pintu masuk utama bagi perdebatan, perundungan, dan toxic. Memberi dukungan tetap mungkin; menyerang tidak.</p>
+    </div>
+  </div>
+
+  <h3 style="font-family:'Newsreader',serif;font-weight:500;font-size:21px;color:#1E2A22;margin:30px 0 12px;">Identitas: pilih sendiri</h3>
+  <p style="font-size:15px;line-height:1.65;color:#48564D;margin:0 0 14px;max-width:66ch;">Untuk tiap kiriman, pengguna memilih tampil sebagai <strong>anonim</strong> (nama samaran lembut seperti "Pejalan Senja") atau dengan <strong>profil</strong> mereka. Default-nya anonim — keterbukaan adalah pilihan, bukan keharusan.</p>
+
+  <div class="keep" style="margin-top:8px;background:#FBF1E9;border:1px solid #F2D8C5;border-radius:14px;padding:16px 18px;">
+    <div style="font-family:'Spline Sans Mono',monospace;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#C9794A;font-weight:600;margin-bottom:6px;">Pagar pengaman komunitas</div>
+    <p style="margin:0;font-size:14px;line-height:1.6;color:#7A4F31;">Tanpa pesan pribadi (DM) di fase awal · tanpa jumlah pengikut/like publik · batas kirim per jam (rate limit) · semua kiriman lewat moderasi (§06) sebelum tampil · tombol lapor &amp; sembunyikan di mana saja.</p>
+  </div>
+</section>
+
+<!-- ============ 04 AKUN ============ -->
+<section style="margin-top:58px;">
+  <div style="font-family:'Spline Sans Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#C9794A;font-weight:600;margin-bottom:10px;">04 — Go Public</div>
+  <h2 style="font-family:'Newsreader',serif;font-weight:500;font-size:31px;line-height:1.15;color:#1E2A22;margin:0 0 16px;letter-spacing:-.01em;text-wrap:balance;">Akun &amp; Registrasi</h2>
+  <p style="font-size:16.5px;line-height:1.65;color:#48564D;margin:0 0 20px;max-width:66ch;">Agar bisa dirilis ke umum dan komunitas berfungsi, Lentera butuh akun. Tapi akun hanya wajib untuk hal yang menyentuh server (komunitas, sinkron, cadangan) — menulis jurnal pribadi tetap bisa langsung tanpa daftar.</p>
+
+  <h3 style="font-family:'Newsreader',serif;font-weight:500;font-size:21px;color:#1E2A22;margin:8px 0 12px;">Cara masuk</h3>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px;">
+    <div class="keep" style="display:flex;align-items:center;gap:12px;background:#fff;border:1px solid #E7E3DA;border-radius:13px;padding:14px 16px;"><span style="font-family:'Spline Sans Mono',monospace;font-size:11px;color:#A6B0A8;">A</span><div><div style="font-weight:700;color:#28332B;font-size:14.5px;">Email + kata sandi</div><div style="font-size:12.5px;color:#7A857C;">Klasik, dapat diandalkan</div></div></div>
+    <div class="keep" style="display:flex;align-items:center;gap:12px;background:#fff;border:1px solid #E7E3DA;border-radius:13px;padding:14px 16px;"><span style="font-family:'Spline Sans Mono',monospace;font-size:11px;color:#A6B0A8;">B</span><div><div style="font-weight:700;color:#28332B;font-size:14.5px;">Nomor HP (OTP)</div><div style="font-size:12.5px;color:#7A857C;">Tanpa kata sandi, kode sekali pakai</div></div></div>
+    <div class="keep" style="display:flex;align-items:center;gap:12px;background:#fff;border:1px solid #E7E3DA;border-radius:13px;padding:14px 16px;"><span style="font-family:'Spline Sans Mono',monospace;font-size:11px;color:#A6B0A8;">C</span><div><div style="font-weight:700;color:#28332B;font-size:14.5px;">Google</div><div style="font-size:12.5px;color:#7A857C;">Satu ketuk (OAuth)</div></div></div>
+    <div class="keep" style="display:flex;align-items:center;gap:12px;background:#fff;border:1px solid #E7E3DA;border-radius:13px;padding:14px 16px;"><span style="font-family:'Spline Sans Mono',monospace;font-size:11px;color:#A6B0A8;">D</span><div><div style="font-weight:700;color:#28332B;font-size:14.5px;">Apple</div><div style="font-size:12.5px;color:#7A857C;">Satu ketuk, privasi tinggi</div></div></div>
+  </div>
+
+  <h3 style="font-family:'Newsreader',serif;font-weight:500;font-size:21px;color:#1E2A22;margin:26px 0 12px;">Alur pertama kali</h3>
+  <div class="keep" style="display:flex;align-items:stretch;gap:8px;flex-wrap:wrap;">
+    <div style="flex:1;min-width:110px;background:#F1F6F2;border:1px solid #D7E6DC;border-radius:12px;padding:13px;text-align:center;"><div style="font-family:'Spline Sans Mono',monospace;font-size:11px;color:#2F8A5F;margin-bottom:4px;">1</div><div style="font-size:13px;font-weight:700;color:#28332B;">Onboarding</div><div style="font-size:11.5px;color:#7A857C;margin-top:2px;">kenalan + passphrase</div></div>
+    <div style="display:flex;align-items:center;color:#BcC6Bd;">→</div>
+    <div style="flex:1;min-width:110px;background:#F1F6F2;border:1px solid #D7E6DC;border-radius:12px;padding:13px;text-align:center;"><div style="font-family:'Spline Sans Mono',monospace;font-size:11px;color:#2F8A5F;margin-bottom:4px;">2</div><div style="font-size:13px;font-weight:700;color:#28332B;">Pakai dulu</div><div style="font-size:11.5px;color:#7A857C;margin-top:2px;">jurnal tanpa akun</div></div>
+    <div style="display:flex;align-items:center;color:#BcC6Bd;">→</div>
+    <div style="flex:1;min-width:110px;background:#F1F6F2;border:1px solid #D7E6DC;border-radius:12px;padding:13px;text-align:center;"><div style="font-family:'Spline Sans Mono',monospace;font-size:11px;color:#2F8A5F;margin-bottom:4px;">3</div><div style="font-size:13px;font-weight:700;color:#28332B;">Daftar saat butuh</div><div style="font-size:11.5px;color:#7A857C;margin-top:2px;">untuk komunitas/sinkron</div></div>
+  </div>
+  <p style="font-size:13.5px;line-height:1.6;color:#7A857C;margin:10px 0 0;font-style:italic;">Pengguna lama (offline) tetap aman — saat daftar, jurnal lokal mereka ditautkan ke akun, dengan opsi sinkron terenkripsi.</p>
+
+  <h3 style="font-family:'Newsreader',serif;font-weight:500;font-size:21px;color:#1E2A22;margin:26px 0 12px;">Pemulihan akun</h3>
+  <p style="font-size:15px;line-height:1.65;color:#48564D;margin:0 0 0;max-width:66ch;">Sesuai keputusan: <strong>pemulihan dibuat longgar</strong> — server membantu memulihkan akses lewat email/HP. Ini menurunkan privasi sedikit (server memegang jalur pemulihan), demi mencegah pengguna terkunci selamanya dari kisah mereka. Konsekuensinya dijelaskan jujur di §05.</p>
+</section>
+
+<!-- ============ 05 PRIVASI ============ -->
+<section style="margin-top:58px;">
+  <div style="font-family:'Spline Sans Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#A6B0A8;font-weight:600;margin-bottom:10px;">05 — Inti arsitektur</div>
+  <h2 style="font-family:'Newsreader',serif;font-weight:500;font-size:31px;line-height:1.15;color:#1E2A22;margin:0 0 16px;letter-spacing:-.01em;text-wrap:balance;">Model Privasi: dua bidang data</h2>
+  <p style="font-size:16.5px;line-height:1.65;color:#48564D;margin:0 0 22px;max-width:66ch;">Ini keputusan terpenting di seluruh rencana. Jurnal pribadi dan komunitas publik punya kebutuhan yang <strong>berlawanan</strong>: yang satu harus rahasia total, yang lain harus bisa dimoderasi. Solusinya — pisahkan jadi dua bidang yang tidak pernah bercampur otomatis.</p>
+
+  <!-- two-plane diagram -->
+  <div class="keep" style="border:1px solid #E2DED4;border-radius:18px;overflow:hidden;margin:6px 0 18px;">
+    <div style="display:flex;">
+      <div style="flex:1;background:#F1F6F2;padding:22px;">
+        <div style="display:inline-block;font-family:'Spline Sans Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#2F8A5F;background:#DCEDE2;border-radius:999px;padding:3px 10px;margin-bottom:11px;font-weight:600;">Bidang A · Privat</div>
+        <div style="font-family:'Newsreader',serif;font-size:20px;color:#1E2A22;margin-bottom:8px;">Jurnal Pribadi</div>
+        <div style="font-size:13px;line-height:1.9;color:#3E4D44;">
+          🔒 Terenkripsi end-to-end<br>
+          📱 Mengutamakan perangkat (device-first)<br>
+          ☁️ Cadangan awan terenkripsi (opsional)<br>
+          👤 Hanya pemilik yang bisa baca<br>
+          🚫 Tidak pernah dimoderasi / dibaca server
+        </div>
+      </div>
+      <div style="width:1px;background:#E2DED4;"></div>
+      <div style="flex:1;background:#FBF7F0;padding:22px;">
+        <div style="display:inline-block;font-family:'Spline Sans Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#C9794A;background:#F6E2D2;border-radius:999px;padding:3px 10px;margin-bottom:11px;font-weight:600;">Bidang B · Publik</div>
+        <div style="font-family:'Newsreader',serif;font-size:20px;color:#1E2A22;margin-bottom:8px;">Komunitas</div>
+        <div style="font-size:13px;line-height:1.9;color:#4A4034;">
+          🌐 Tersimpan di server (bisa dilihat orang)<br>
+          🪪 Nama samaran / pseudonim<br>
+          🛡️ Wajib lewat moderasi (§06)<br>
+          🔍 Tidak E2E — agar bisa disaring<br>
+          🧹 Bisa dihapus &amp; dilaporkan
+        </div>
+      </div>
+    </div>
+    <div style="background:#fff;border-top:1px solid #E2DED4;padding:14px 22px;text-align:center;">
+      <span style="font-family:'Spline Sans Mono',monospace;font-size:11.5px;color:#5B6A60;">A &nbsp;──&nbsp; "angkat manual, satu arah" &nbsp;──▶&nbsp; B</span>
+      <p style="margin:6px 0 0;font-size:13px;color:#7A857C;line-height:1.55;">Tidak ada data yang menyeberang sendiri. Membagikan momen ke komunitas adalah tindakan sadar: isinya <strong>disalin &amp; dilepas</strong> dari jurnal, boleh dianonimkan dulu. Jurnal aslinya tetap utuh &amp; privat.</p>
+    </div>
+  </div>
+
+  <!-- privacy matrix table -->
+  <h3 style="font-family:'Newsreader',serif;font-weight:500;font-size:21px;color:#1E2A22;margin:26px 0 12px;">Ringkasan siapa-melihat-apa</h3>
+  <table class="keep" style="width:100%;border-collapse:collapse;font-size:13.5px;">
+    <thead><tr style="background:#EFEDE6;">
+      <th style="text-align:left;padding:10px 12px;border:1px solid #E2DED4;font-weight:700;color:#3E4A41;">Aspek</th>
+      <th style="text-align:left;padding:10px 12px;border:1px solid #E2DED4;font-weight:700;color:#2F8A5F;">Jurnal Pribadi</th>
+      <th style="text-align:left;padding:10px 12px;border:1px solid #E2DED4;font-weight:700;color:#C9794A;">Komunitas</th>
+    </tr></thead>
+    <tbody style="color:#4B584F;">
+      <tr><td style="padding:9px 12px;border:1px solid #E2DED4;font-weight:600;">Lokasi simpan</td><td style="padding:9px 12px;border:1px solid #E2DED4;">Perangkat (+ cadangan terenkripsi)</td><td style="padding:9px 12px;border:1px solid #E2DED4;">Server</td></tr>
+      <tr style="background:#FCFBF8;"><td style="padding:9px 12px;border:1px solid #E2DED4;font-weight:600;">Enkripsi</td><td style="padding:9px 12px;border:1px solid #E2DED4;">End-to-end (AES-256)</td><td style="padding:9px 12px;border:1px solid #E2DED4;">Transit + at-rest (bukan E2E)</td></tr>
+      <tr><td style="padding:9px 12px;border:1px solid #E2DED4;font-weight:600;">Siapa bisa baca</td><td style="padding:9px 12px;border:1px solid #E2DED4;">Hanya pemilik</td><td style="padding:9px 12px;border:1px solid #E2DED4;">Publik / anggota lingkaran</td></tr>
+      <tr style="background:#FCFBF8;"><td style="padding:9px 12px;border:1px solid #E2DED4;font-weight:600;">Identitas</td><td style="padding:9px 12px;border:1px solid #E2DED4;">Pribadi penuh</td><td style="padding:9px 12px;border:1px solid #E2DED4;">Anonim / pseudonim (pilih)</td></tr>
+      <tr><td style="padding:9px 12px;border:1px solid #E2DED4;font-weight:600;">Moderasi</td><td style="padding:9px 12px;border:1px solid #E2DED4;">Tidak ada</td><td style="padding:9px 12px;border:1px solid #E2DED4;">Wajib (regex + AI)</td></tr>
+      <tr style="background:#FCFBF8;"><td style="padding:9px 12px;border:1px solid #E2DED4;font-weight:600;">Butuh akun?</td><td style="padding:9px 12px;border:1px solid #E2DED4;">Tidak</td><td style="padding:9px 12px;border:1px solid #E2DED4;">Ya</td></tr>
+    </tbody>
+  </table>
+
+  <div class="keep" style="margin-top:18px;background:#EFEAF8;border:1px solid #DED3F0;border-radius:14px;padding:16px 18px;">
+    <div style="font-family:'Spline Sans Mono',monospace;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#6E5BB0;font-weight:600;margin-bottom:6px;">Trade-off yang disepakati</div>
+    <p style="margin:0;font-size:14px;line-height:1.6;color:#4B4068;">Pemulihan dibantu server berarti ada <strong>titipan kunci pemulihan (key escrow)</strong> di sisi server untuk cadangan jurnal. Ini menurunkan kemurnian E2E sedikit, tapi mencegah kehilangan total. Disampaikan terus terang saat setup, dan pengguna boleh memilih mode "tanpa pemulihan, lebih privat" bila mau.</p>
+  </div>
+</section>
+
+<!-- ============ 06 MODERASI ============ -->
+<section style="margin-top:58px;">
+  <div style="font-family:'Spline Sans Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#A6B0A8;font-weight:600;margin-bottom:10px;">06 — Keamanan</div>
+  <h2 style="font-family:'Newsreader',serif;font-weight:500;font-size:31px;line-height:1.15;color:#1E2A22;margin:0 0 16px;letter-spacing:-.01em;text-wrap:balance;">Anti-Toxic &amp; Moderasi</h2>
+  <p style="font-size:16.5px;line-height:1.65;color:#48564D;margin:0 0 20px;max-width:66ch;">Setiap kiriman ke komunitas melewati pipa moderasi sebelum tampil. Dua lapis bekerja bersama — cepat &amp; pasti di depan, cerdas &amp; berkonteks di belakang.</p>
+
+  <!-- pipeline -->
+  <div class="keep" style="display:flex;align-items:stretch;gap:7px;flex-wrap:wrap;margin-bottom:18px;">
+    <div style="flex:1;min-width:120px;background:#fff;border:1px solid #E7E3DA;border-radius:12px;padding:13px;"><div style="font-family:'Spline Sans Mono',monospace;font-size:10px;color:#A6B0A8;margin-bottom:5px;">INPUT</div><div style="font-size:13px;font-weight:700;color:#28332B;">Kiriman</div></div>
+    <div style="display:flex;align-items:center;color:#C3CCC4;">→</div>
+    <div style="flex:1;min-width:120px;background:#FBF1E9;border:1px solid #F2D8C5;border-radius:12px;padding:13px;"><div style="font-family:'Spline Sans Mono',monospace;font-size:10px;color:#C9794A;margin-bottom:5px;">LAPIS 1</div><div style="font-size:13px;font-weight:700;color:#28332B;">Filter kata (regex)</div><div style="font-size:11.5px;color:#7A857C;margin-top:2px;">daftar kata terlarang → blok instan</div></div>
+    <div style="display:flex;align-items:center;color:#C3CCC4;">→</div>
+    <div style="flex:1;min-width:120px;background:#EFEAF8;border:1px solid #DED3F0;border-radius:12px;padding:13px;"><div style="font-family:'Spline Sans Mono',monospace;font-size:10px;color:#6E5BB0;margin-bottom:5px;">LAPIS 2</div><div style="font-size:13px;font-weight:700;color:#28332B;">Klasifikasi AI</div><div style="font-size:11.5px;color:#7A857C;margin-top:2px;">toxic, perundungan, self-harm</div></div>
+    <div style="display:flex;align-items:center;color:#C3CCC4;">→</div>
+    <div style="flex:1;min-width:120px;background:#F1F6F2;border:1px solid #D7E6DC;border-radius:12px;padding:13px;"><div style="font-family:'Spline Sans Mono',monospace;font-size:10px;color:#2F8A5F;margin-bottom:5px;">KEPUTUSAN</div><div style="font-size:13px;font-weight:700;color:#28332B;">Lolos · Halus · Tahan · Eskalasi</div></div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+    <div class="keep" style="background:#fff;border:1px solid #E7E3DA;border-radius:14px;padding:16px 18px;">
+      <div style="font-weight:700;color:#28332B;margin-bottom:5px;">Lapis 1 — Daftar kata (regex)</div>
+      <p style="margin:0;font-size:13.5px;line-height:1.6;color:#5B6A60;">Kamus kata/pola terlarang yang dikelola admin. Cocok = langsung diblok atau di-mask. Cepat, deterministik, jadi garis pertahanan pertama. Daftarnya bisa di-AI-bantu untuk menambah varian &amp; typo.</p>
+    </div>
+    <div class="keep" style="background:#fff;border:1px solid #E7E3DA;border-radius:14px;padding:16px 18px;">
+      <div style="font-weight:700;color:#28332B;margin-bottom:5px;">Lapis 2 — Klasifikasi AI</div>
+      <p style="margin:0;font-size:13.5px;line-height:1.6;color:#5B6A60;">Model (Google Gemini) menilai nada &amp; niat: ujaran kebencian, pelecehan, promosi, dan isyarat menyakiti diri. Skor tinggi → otomatis dibatasi, ditahan, atau diteruskan ke antrean moderator manusia.</p>
+    </div>
+  </div>
+
+  <div class="keep" style="margin-top:14px;background:#F1F6F2;border:1px solid #D7E6DC;border-left:4px solid #2F8A5F;border-radius:14px;padding:16px 18px;">
+    <div style="font-family:'Spline Sans Mono',monospace;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#2F8A5F;font-weight:600;margin-bottom:6px;">Penanganan khusus · isyarat menyakiti diri</div>
+    <p style="margin:0;font-size:14px;line-height:1.6;color:#33433A;">Bila terdeteksi tanda krisis, sistem <strong>tidak memblokir dingin</strong>. Pengguna dirangkul lembut: ditawari sumber bantuan (hotline lokal), diingatkan ia tidak sendirian, dan diarahkan ke ruang yang aman. Keselamatan di atas moderasi.</p>
+  </div>
+
+  <p style="font-size:14.5px;line-height:1.65;color:#48564D;margin:16px 0 0;max-width:66ch;">Pengguna juga punya kendali langsung: <strong>lapor</strong>, <strong>sembunyikan</strong>, dan <strong>blokir</strong> di setiap kiriman. Laporan masuk ke konsol admin (§07).</p>
+</section>
+
+<!-- ============ 07 ADMIN ============ -->
+<section style="margin-top:58px;">
+  <div style="font-family:'Spline Sans Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#A6B0A8;font-weight:600;margin-bottom:10px;">07 — Web</div>
+  <h2 style="font-family:'Newsreader',serif;font-weight:500;font-size:31px;line-height:1.15;color:#1E2A22;margin:0 0 16px;letter-spacing:-.01em;text-wrap:balance;">Konsol Admin (Web Dashboard)</h2>
+  <p style="font-size:16.5px;line-height:1.65;color:#48564D;margin:0 0 18px;max-width:66ch;">Dashboard web yang sudah ada beralih peran: dari laporan analitik pribadi → menjadi <strong>pusat moderasi &amp; kesehatan komunitas</strong> untuk kamu kelola. Isinya:</p>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px;">
+    <div class="keep" style="background:#fff;border:1px solid #E7E3DA;border-radius:13px;padding:15px 17px;"><div style="font-weight:700;color:#28332B;font-size:14.5px;margin-bottom:3px;">📥 Antrean moderasi</div><div style="font-size:13px;color:#5B6A60;line-height:1.55;">Kiriman yang ditahan AI — setujui, halus-kan, atau tolak.</div></div>
+    <div class="keep" style="background:#fff;border:1px solid #E7E3DA;border-radius:13px;padding:15px 17px;"><div style="font-weight:700;color:#28332B;font-size:14.5px;margin-bottom:3px;">🚩 Laporan pengguna</div><div style="font-size:13px;color:#5B6A60;line-height:1.55;">Konten yang dilaporkan, dengan konteks &amp; riwayat.</div></div>
+    <div class="keep" style="background:#fff;border:1px solid #E7E3DA;border-radius:13px;padding:15px 17px;"><div style="font-weight:700;color:#28332B;font-size:14.5px;margin-bottom:3px;">📝 Pengelola kata terlarang</div><div style="font-size:13px;color:#5B6A60;line-height:1.55;">Tambah/hapus pola regex, uji coba, saran varian dari AI.</div></div>
+    <div class="keep" style="background:#fff;border:1px solid #E7E3DA;border-radius:13px;padding:15px 17px;"><div style="font-weight:700;color:#28332B;font-size:14.5px;margin-bottom:3px;">🔨 Tindakan akun</div><div style="font-size:13px;color:#5B6A60;line-height:1.55;">Bisukan, batasi, atau blokir akun yang melanggar.</div></div>
+    <div class="keep" style="background:#fff;border:1px solid #E7E3DA;border-radius:13px;padding:15px 17px;grid-column:1 / -1;"><div style="font-weight:700;color:#28332B;font-size:14.5px;margin-bottom:3px;">💚 Metrik kesehatan komunitas</div><div style="font-size:13px;color:#5B6A60;line-height:1.55;">Rasio positif, kecepatan moderasi, laporan tertangani — bukan metrik pertumbuhan yang bikin cemas, tapi indikator <em>kehangatan</em> ruang.</div></div>
+  </div>
+</section>
+
+<!-- ============ 08 ARSITEKTUR ============ -->
+<section style="margin-top:58px;">
+  <div style="font-family:'Spline Sans Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#A6B0A8;font-weight:600;margin-bottom:10px;">08 — Teknis</div>
+  <h2 style="font-family:'Newsreader',serif;font-weight:500;font-size:31px;line-height:1.15;color:#1E2A22;margin:0 0 16px;letter-spacing:-.01em;text-wrap:balance;">Arsitektur &amp; Data</h2>
+  <p style="font-size:16.5px;line-height:1.65;color:#48564D;margin:0 0 18px;max-width:66ch;">Tiga bagian sistem tetap: <strong>Mobile</strong> (Flutter) · <strong>Web Admin</strong> · <strong>API Backend</strong>. Yang baru adalah lapisan server untuk akun &amp; komunitas. Jurnal pribadi tetap sebagai blob terenkripsi yang tak terbaca server.</p>
+
+  <h3 style="font-family:'Newsreader',serif;font-weight:500;font-size:21px;color:#1E2A22;margin:8px 0 12px;">Model data (server)</h3>
+  <table class="keep" style="width:100%;border-collapse:collapse;font-size:13px;">
+    <thead><tr style="background:#EFEDE6;">
+      <th style="text-align:left;padding:10px 12px;border:1px solid #E2DED4;font-weight:700;color:#3E4A41;">Tabel</th>
+      <th style="text-align:left;padding:10px 12px;border:1px solid #E2DED4;font-weight:700;color:#3E4A41;">Kolom utama</th>
+      <th style="text-align:left;padding:10px 12px;border:1px solid #E2DED4;font-weight:700;color:#3E4A41;">Catatan</th>
+    </tr></thead>
+    <tbody style="color:#4B584F;font-family:'Spline Sans Mono',monospace;font-size:12px;">
+      <tr><td style="padding:8px 12px;border:1px solid #E2DED4;">users</td><td style="padding:8px 12px;border:1px solid #E2DED4;">id, handle, created_at, status</td><td style="padding:8px 12px;border:1px solid #E2DED4;font-family:'Nunito Sans';">profil &amp; pseudonim</td></tr>
+      <tr style="background:#FCFBF8;"><td style="padding:8px 12px;border:1px solid #E2DED4;">auth_identities</td><td style="padding:8px 12px;border:1px solid #E2DED4;">user_id, provider, identifier</td><td style="padding:8px 12px;border:1px solid #E2DED4;font-family:'Nunito Sans';">email/HP/Google/Apple</td></tr>
+      <tr><td style="padding:8px 12px;border:1px solid #E2DED4;">vault_backups</td><td style="padding:8px 12px;border:1px solid #E2DED4;">user_id, blob, key_escrow</td><td style="padding:8px 12px;border:1px solid #E2DED4;font-family:'Nunito Sans';">jurnal terenkripsi (opsional)</td></tr>
+      <tr style="background:#FCFBF8;"><td style="padding:8px 12px;border:1px solid #E2DED4;">posts</td><td style="padding:8px 12px;border:1px solid #E2DED4;">id, author_id, body, surface, anon</td><td style="padding:8px 12px;border:1px solid #E2DED4;font-family:'Nunito Sans';">kiriman komunitas</td></tr>
+      <tr><td style="padding:8px 12px;border:1px solid #E2DED4;">reactions</td><td style="padding:8px 12px;border:1px solid #E2DED4;">post_id, user_id, kind</td><td style="padding:8px 12px;border:1px solid #E2DED4;font-family:'Nunito Sans';">reaksi hangat</td></tr>
+      <tr style="background:#FCFBF8;"><td style="padding:8px 12px;border:1px solid #E2DED4;">circles / members</td><td style="padding:8px 12px;border:1px solid #E2DED4;">id, theme · circle_id, user_id</td><td style="padding:8px 12px;border:1px solid #E2DED4;font-family:'Nunito Sans';">lingkaran kecil</td></tr>
+      <tr><td style="padding:8px 12px;border:1px solid #E2DED4;">reports</td><td style="padding:8px 12px;border:1px solid #E2DED4;">post_id, reporter_id, reason</td><td style="padding:8px 12px;border:1px solid #E2DED4;font-family:'Nunito Sans';">laporan pengguna</td></tr>
+      <tr style="background:#FCFBF8;"><td style="padding:8px 12px;border:1px solid #E2DED4;">moderation / banned_terms</td><td style="padding:8px 12px;border:1px solid #E2DED4;">action, target · pattern</td><td style="padding:8px 12px;border:1px solid #E2DED4;font-family:'Nunito Sans';">jejak &amp; kamus regex</td></tr>
+    </tbody>
+  </table>
+
+  <h3 style="font-family:'Newsreader',serif;font-weight:500;font-size:21px;color:#1E2A22;margin:26px 0 12px;">Garis besar API</h3>
+  <table class="keep" style="width:100%;border-collapse:collapse;font-size:13px;">
+    <thead><tr style="background:#EFEDE6;">
+      <th style="text-align:left;padding:10px 12px;border:1px solid #E2DED4;font-weight:700;color:#3E4A41;width:80px;">Grup</th>
+      <th style="text-align:left;padding:10px 12px;border:1px solid #E2DED4;font-weight:700;color:#3E4A41;">Endpoint</th>
+    </tr></thead>
+    <tbody style="color:#4B584F;">
+      <tr><td style="padding:9px 12px;border:1px solid #E2DED4;font-weight:700;color:#C9794A;">Auth</td><td style="padding:9px 12px;border:1px solid #E2DED4;font-family:'Spline Sans Mono',monospace;font-size:12px;">POST /auth/register · /auth/login · /auth/otp · /auth/oauth · /auth/recover</td></tr>
+      <tr style="background:#FCFBF8;"><td style="padding:9px 12px;border:1px solid #E2DED4;font-weight:700;color:#6E5BB0;">Sync</td><td style="padding:9px 12px;border:1px solid #E2DED4;font-family:'Spline Sans Mono',monospace;font-size:12px;">PUT /vault/backup · GET /vault/restore</td></tr>
+      <tr><td style="padding:9px 12px;border:1px solid #E2DED4;font-weight:700;color:#2F8A5F;">Community</td><td style="padding:9px 12px;border:1px solid #E2DED4;font-family:'Spline Sans Mono',monospace;font-size:12px;">GET /feed · POST /posts · POST /posts/:id/react · /circles · /prompt/today</td></tr>
+      <tr style="background:#FCFBF8;"><td style="padding:9px 12px;border:1px solid #E2DED4;font-weight:700;color:#7A857C;">Moderation</td><td style="padding:9px 12px;border:1px solid #E2DED4;font-family:'Spline Sans Mono',monospace;font-size:12px;">POST /reports · GET /mod/queue · POST /mod/action · /mod/terms</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ============ 09 ROADMAP ============ -->
+<section style="margin-top:58px;">
+  <div style="font-family:'Spline Sans Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#A6B0A8;font-weight:600;margin-bottom:10px;">09 — Eksekusi</div>
+  <h2 style="font-family:'Newsreader',serif;font-weight:500;font-size:31px;line-height:1.15;color:#1E2A22;margin:0 0 16px;letter-spacing:-.01em;text-wrap:balance;">Roadmap bertahap</h2>
+  <p style="font-size:16.5px;line-height:1.65;color:#48564D;margin:0 0 20px;max-width:66ch;">Urutan dipilih dari risiko terendah ke tertinggi. Nilai sampai ke pengguna lebih cepat, dan fondasi privasi/moderasi matang sebelum data publik dibuka.</p>
+
+  <div style="position:relative;padding-left:22px;border-left:2px solid #DDE6DF;">
+    <div class="keep" style="position:relative;margin-bottom:20px;">
+      <div style="position:absolute;left:-29px;top:2px;width:14px;height:14px;border-radius:50%;background:#2F8A5F;border:3px solid #FAF8F3;"></div>
+      <div style="font-family:'Spline Sans Mono',monospace;font-size:11px;color:#2F8A5F;font-weight:600;margin-bottom:3px;">FASE 0 · paling aman</div>
+      <div style="font-weight:800;color:#1E2A22;font-size:16px;margin-bottom:3px;">Rekap Harian "Hari Ini"</div>
+      <p style="margin:0;font-size:13.8px;color:#5B6A60;line-height:1.55;">Sepenuhnya offline, tanpa akun. Auto-rekap, tiga baris malam, mood, energi sosial, kalender memori. Tidak ada risiko privasi baru.</p>
+    </div>
+    <div class="keep" style="position:relative;margin-bottom:20px;">
+      <div style="position:absolute;left:-29px;top:2px;width:14px;height:14px;border-radius:50%;background:#6E5BB0;border:3px solid #FAF8F3;"></div>
+      <div style="font-family:'Spline Sans Mono',monospace;font-size:11px;color:#6E5BB0;font-weight:600;margin-bottom:3px;">FASE 1 · fondasi</div>
+      <div style="font-weight:800;color:#1E2A22;font-size:16px;margin-bottom:3px;">Akun &amp; Sinkron terenkripsi</div>
+      <p style="margin:0;font-size:13.8px;color:#5B6A60;line-height:1.55;">Registrasi (email/HP/Google/Apple), cadangan jurnal terenkripsi, pemulihan dibantu server. Belum ada konten publik — hanya pondasi.</p>
+    </div>
+    <div class="keep" style="position:relative;margin-bottom:20px;">
+      <div style="position:absolute;left:-29px;top:2px;width:14px;height:14px;border-radius:50%;background:#C9794A;border:3px solid #FAF8F3;"></div>
+      <div style="font-family:'Spline Sans Mono',monospace;font-size:11px;color:#C9794A;font-weight:600;margin-bottom:3px;">FASE 2 · komunitas inti</div>
+      <div style="font-weight:800;color:#1E2A22;font-size:16px;margin-bottom:3px;">Dinding Syukur + Reaksi + Moderasi MVP</div>
+      <p style="margin:0;font-size:13.8px;color:#5B6A60;line-height:1.55;">Permukaan komunitas pertama yang paling sederhana &amp; aman. Pipa moderasi (regex + AI) dan konsol admin live sejak hari pertama publik.</p>
+    </div>
+    <div class="keep" style="position:relative;margin-bottom:20px;">
+      <div style="position:absolute;left:-29px;top:2px;width:14px;height:14px;border-radius:50%;background:#7FA98C;border:3px solid #FAF8F3;"></div>
+      <div style="font-family:'Spline Sans Mono',monospace;font-size:11px;color:#5E7A68;font-weight:600;margin-bottom:3px;">FASE 3 · perluas</div>
+      <div style="font-weight:800;color:#1E2A22;font-size:16px;margin-bottom:3px;">Kirim kekuatan · Prompt bersama · Lingkaran</div>
+      <p style="margin:0;font-size:13.8px;color:#5B6A60;line-height:1.55;">Permukaan komunitas yang lebih kaya, dibuka setelah moderasi terbukti tahan di Fase 2.</p>
+    </div>
+    <div class="keep" style="position:relative;">
+      <div style="position:absolute;left:-29px;top:2px;width:14px;height:14px;border-radius:50%;background:#AEBBB1;border:3px solid #FAF8F3;"></div>
+      <div style="font-family:'Spline Sans Mono',monospace;font-size:11px;color:#7A857C;font-weight:600;margin-bottom:3px;">FASE 4 · skala</div>
+      <div style="font-weight:800;color:#1E2A22;font-size:16px;margin-bottom:3px;">Penyempurnaan &amp; ketahanan</div>
+      <p style="margin:0;font-size:13.8px;color:#5B6A60;line-height:1.55;">Moderasi lebih cerdas, alat keselamatan, performa, dan kesiapan rilis publik penuh.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 10 RISIKO ============ -->
+<section style="margin-top:58px;">
+  <div style="font-family:'Spline Sans Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#A6B0A8;font-weight:600;margin-bottom:10px;">10 — Jujur</div>
+  <h2 style="font-family:'Newsreader',serif;font-weight:500;font-size:31px;line-height:1.15;color:#1E2A22;margin:0 0 16px;letter-spacing:-.01em;text-wrap:balance;">Risiko &amp; pertimbangan</h2>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+    <div class="keep" style="background:#FBF1E9;border:1px solid #F2D8C5;border-radius:14px;padding:15px 17px;"><div style="font-weight:700;color:#9A5A33;margin-bottom:3px;font-size:14.5px;">Tanggung jawab kesehatan mental</div><p style="margin:0;font-size:13px;color:#7A4F31;line-height:1.55;">Ruang untuk orang rapuh menuntut jaring pengaman, sumber bantuan, dan eskalasi krisis yang serius.</p></div>
+    <div class="keep" style="background:#FBF1E9;border:1px solid #F2D8C5;border-radius:14px;padding:15px 17px;"><div style="font-weight:700;color:#9A5A33;margin-bottom:3px;font-size:14.5px;">Privasi vs pemulihan</div><p style="margin:0;font-size:13px;color:#7A4F31;line-height:1.55;">Pemulihan dibantu server menukar sedikit kemurnian E2E. Harus transparan &amp; bisa dipilih.</p></div>
+    <div class="keep" style="background:#FBF1E9;border:1px solid #F2D8C5;border-radius:14px;padding:15px 17px;"><div style="font-weight:700;color:#9A5A33;margin-bottom:3px;font-size:14.5px;">Biaya moderasi</div><p style="margin:0;font-size:13px;color:#7A4F31;line-height:1.55;">Komunitas yang aman butuh tenaga &amp; biaya AI berkelanjutan — sementara aplikasi gratis.</p></div>
+    <div class="keep" style="background:#FBF1E9;border:1px solid #F2D8C5;border-radius:14px;padding:15px 17px;"><div style="font-weight:700;color:#9A5A33;margin-bottom:3px;font-size:14.5px;">Anonim vs akuntabilitas</div><p style="margin:0;font-size:13px;color:#7A4F31;line-height:1.55;">Anonimitas melindungi keterbukaan tapi bisa disalahgunakan. Rate limit &amp; moderasi menyeimbangkan.</p></div>
+    <div class="keep" style="background:#FBF1E9;border:1px solid #F2D8C5;border-radius:14px;padding:15px 17px;grid-column:1 / -1;"><div style="font-weight:700;color:#9A5A33;margin-bottom:3px;font-size:14.5px;">Hukum &amp; pengguna di bawah umur</div><p style="margin:0;font-size:13px;color:#7A4F31;line-height:1.55;">Rilis publik membawa kewajiban: kebijakan data, syarat layanan, batas usia, dan kepatuhan regional.</p></div>
+  </div>
+</section>
+
+<!-- ============ 11 KEPUTUSAN ============ -->
+<section style="margin-top:58px;">
+  <div style="font-family:'Spline Sans Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#A6B0A8;font-weight:600;margin-bottom:10px;">11 — Langkah berikutnya</div>
+  <h2 style="font-family:'Newsreader',serif;font-weight:500;font-size:31px;line-height:1.15;color:#1E2A22;margin:0 0 16px;letter-spacing:-.01em;text-wrap:balance;">Keputusan yang kita ambil</h2>
+  <div style="display:flex;flex-direction:column;gap:9px;">
+    <div class="keep" style="display:flex;gap:13px;align-items:flex-start;background:#fff;border:1px solid #E7E3DA;border-radius:13px;padding:14px 16px;">
+      <span style="flex:none;width:22px;height:22px;border-radius:50%;background:#E8F3EC;color:#2F8A5F;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;">✓</span>
+      <div style="flex:1;"><div style="font-weight:700;color:#28332B;font-size:14.5px;margin-bottom:2px;">Moderator awal — <span style="color:#2F8A5F;">hanya kamu, sementara</span></div><div style="font-size:13px;color:#6E7B71;line-height:1.5;">Cukup untuk skala awal. Rencanakan tim kecil / relawan saat komunitas tumbuh.</div></div>
+    </div>
+    <div class="keep" style="display:flex;gap:13px;align-items:flex-start;background:#fff;border:1px solid #E7E3DA;border-radius:13px;padding:14px 16px;">
+      <span style="flex:none;width:22px;height:22px;border-radius:50%;background:#E8F3EC;color:#2F8A5F;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;">✓</span>
+      <div style="flex:1;"><div style="font-weight:700;color:#28332B;font-size:14.5px;margin-bottom:2px;">AI moderasi &amp; auto-rekap — <span style="color:#2F8A5F;">awan, Google Gemini (tier gratis)</span></div><div style="font-size:13px;color:#6E7B71;line-height:1.5;">Kuat &amp; tanpa biaya di awal. Pantau kuota; siapkan opsi alternatif bila skala melampaui tier gratis.</div></div>
+    </div>
+    <div class="keep" style="display:flex;gap:13px;align-items:flex-start;background:#FBF1E9;border:1px solid #F2D8C5;border-radius:13px;padding:14px 16px;">
+      <span style="flex:none;width:22px;height:22px;border-radius:50%;background:#F6E2D2;color:#C9794A;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;">◷</span>
+      <div style="flex:1;"><div style="font-weight:700;color:#28332B;font-size:14.5px;margin-bottom:2px;">Hotline krisis — <span style="color:#C9794A;">menyusul</span></div><div style="font-size:13px;color:#7A4F31;line-height:1.5;">Nomor per-wilayah ditambahkan nanti. Wajib aktif sebelum komunitas live (lihat §06).</div></div>
+    </div>
+    <div class="keep" style="display:flex;gap:13px;align-items:flex-start;background:#fff;border:1px solid #E7E3DA;border-radius:13px;padding:14px 16px;">
+      <span style="flex:none;width:22px;height:22px;border-radius:50%;background:#E8F3EC;color:#2F8A5F;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;">✓</span>
+      <div style="flex:1;"><div style="font-weight:700;color:#28332B;font-size:14.5px;margin-bottom:2px;">Batas usia — <span style="color:#2F8A5F;">tidak ada batas</span></div><div style="font-size:13px;color:#6E7B71;line-height:1.5;">Terbuka untuk semua. Tinjau ulang demi keamanan &amp; kepatuhan saat rilis publik penuh.</div></div>
+    </div>
+    <div class="keep" style="display:flex;gap:13px;align-items:flex-start;background:#fff;border:1px solid #E7E3DA;border-radius:13px;padding:14px 16px;">
+      <span style="flex:none;width:22px;height:22px;border-radius:50%;background:#E8F3EC;color:#2F8A5F;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;">✓</span>
+      <div style="flex:1;"><div style="font-weight:700;color:#28332B;font-size:14.5px;margin-bottom:2px;">Kirim kekuatan — <span style="color:#2F8A5F;">moderasi pra-tayang</span></div><div style="font-size:13px;color:#6E7B71;line-height:1.5;">Semua kiriman disaring (regex + AI) sebelum tampil. Lebih aman untuk pesan ke orang asing.</div></div>
+    </div>
+    <div class="keep" style="display:flex;gap:13px;align-items:flex-start;background:#F1F6F2;border:1px solid #D7E6DC;border-radius:13px;padding:14px 16px;">
+      <span style="flex:none;width:22px;height:22px;border-radius:50%;background:#2F8A5F;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;">▸</span>
+      <div style="flex:1;"><div style="font-weight:700;color:#28332B;font-size:14.5px;margin-bottom:2px;">Fase 0 (Rekap Harian) — <span style="color:#2F8A5F;">mulai sekarang</span></div><div style="font-size:13px;color:#3E5A49;line-height:1.5;">Prototipe tab “Hari Ini” sedang dibangun sebagai langkah berikutnya. 🌿</div></div>
+    </div>
+  </div>
+
+  <div class="keep" style="margin-top:26px;background:#16241B;border-radius:18px;padding:26px 28px;">
+    <div style="font-family:'Spline Sans Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#84C9A3;font-weight:600;margin-bottom:9px;">Rekomendasi</div>
+    <p style="margin:0;font-family:'Newsreader',serif;font-size:21px;line-height:1.45;color:#F3F1E9;font-style:italic;">Fase 0 — tab “Hari Ini” — sedang dibangun sekarang. Nilai langsung sampai ke pengguna tanpa risiko privasi baru, sambil fondasi akun &amp; moderasi disiapkan untuk komunitas.</p>
+  </div>
+</section>
+
+<div style="margin-top:44px;padding-top:18px;border-top:1px solid #E2DED4;display:flex;justify-content:space-between;align-items:center;font-family:'Spline Sans Mono',monospace;font-size:11px;color:#A6B0A8;">
+  <span>Lentera · Rencana Produk v1</span>
+  <span>Draft · 30 Juni 2026</span>
+</div>
+
+</td></tr></tbody><tfoot><tr><td class="ftr-space"></td></tr></tfoot></table>
+</main>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    return { print: () => window.print() };
+  }
+}
+</script>
+</body>
+</html>

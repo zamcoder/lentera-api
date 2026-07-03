@@ -1,0 +1,41 @@
+/* Lentera — design tokens for the React web console (Konsol Moderasi).
+   Source of truth: Lentera - Konsol Admin.dc.html (open in browser, DevTools > Computed).
+   Fonts: Newsreader (headings), DM Sans (body), Spline Sans Mono (labels/mono).
+   <link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Spline+Sans+Mono:wght@400;500;600&display=swap" rel="stylesheet"> */
+
+:root {
+  /* surfaces */
+  --bg: #E9E6DB;
+  --card: #F6F4EC;
+  --field: #FBFAF4;
+  /* text */
+  --text: #2C302A;
+  --text-2: #4D5347;
+  --muted: #6E7567;
+  --dim: #9AA093;
+  /* lines */
+  --line: rgba(40,45,35,.08);
+  --border: rgba(40,45,35,.13);
+  /* semantic accents */
+  --sage: #5C8166;          --sage-deep: #3A5340;  --sage-tint: rgba(92,129,102,.14);
+  --clay: #AE6450;          --clay-tint: rgba(174,100,80,.13);
+  --slate: #57708A;         --slate-tint: rgba(87,112,138,.13);
+  --lavender: #7E72B8;      --lav-tint: rgba(126,114,184,.14);
+  /* radius */
+  --r-window: 10px; --r-card: 18px; --r-control: 12px; --r-chip: 9px;
+  /* spacing */
+  --sp-xs: 6px; --sp-sm: 10px; --sp-md: 14px; --sp-lg: 16px; --sp-xl: 22px; --sp-page: 32px;
+  /* shadow */
+  --shadow-card: 0 6px 20px rgba(40,45,35,.05);
+  /* fonts */
+  --font-display: 'Newsreader', serif;
+  --font-body: 'DM Sans', system-ui, sans-serif;
+  --font-mono: 'Spline Sans Mono', monospace;
+}
+
+/* status pills (accounts/queue) — semantic colors */
+.status-active   { background: var(--sage-tint); color: var(--sage-deep); }
+.status-flagged,
+.status-clay     { background: var(--clay-tint); color: var(--clay); }
+.status-watched  { background: var(--lav-tint); color: var(--lavender); }
+.status-neutral  { background: var(--slate-tint); color: var(--slate); }
