@@ -128,9 +128,8 @@ Peta domain (temanlentera.id):
 
 | Host | Untuk |
 |---|---|
-| `console.temanlentera.id` | Konsol admin (SPA + API same-origin), boleh IP-allowlist |
-| `api.temanlentera.id` | API untuk aplikasi mobile & komunitas (publik) |
+| `console.temanlentera.id` | Semuanya — konsol admin (SPA) **dan** API (dipakai konsol & mobile via `/api`) |
 | `temanlentera.id` (root) | Landing page — dibuat terpisah nanti |
 
-Satu Laravel app melayani kedua subdomain (dua server block Nginx). Konsol
-same-origin → tanpa CORS, tanpa perubahan kode.
+Satu subdomain, satu server block Nginx. Konsol same-origin → tanpa CORS, tanpa
+perubahan kode. Gerbang admin = **2FA** (tanpa IP allowlist).
