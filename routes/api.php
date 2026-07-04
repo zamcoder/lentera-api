@@ -5,8 +5,8 @@ use App\Http\Controllers\Api\V1\Auth\OAuthController;
 use App\Http\Controllers\Api\V1\Auth\OtpController;
 use App\Http\Controllers\Api\V1\Auth\RecoveryController;
 use App\Http\Controllers\Api\V1\Auth\TwoFactorController;
+use App\Http\Controllers\Api\V1\HealthController;
 use App\Http\Controllers\Api\V1\MeController;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -20,21 +20,7 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('v1')->group(function () {
 
     // ---------- Health (kickoff) ----------
-    Route::get('/health', function () {
-        $db = 'ok';
-        try {
-            DB::connection()->getPdo();
-        } catch (\Throwable) {
-            $db = 'down';
-        }
-
-        return response()->json([
-            'status' => 'ok',
-            'app' => config('app.name'),
-            'db' => $db,
-            'time' => now()->toIso8601String(),
-        ]);
-    });
+    Route::get('/health', HealthController::class);
 
     // ---------- Auth & Akun (§1) ----------
     Route::prefix('auth')->group(function () {
