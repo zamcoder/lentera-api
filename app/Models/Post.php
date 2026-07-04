@@ -36,7 +36,8 @@ class Post extends Model
 
     protected $fillable = [
         'author_id', 'circle_id', 'prompt_id', 'surface', 'body',
-        'anon', 'pseudonym', 'status', 'mod_source', 'mod_reason',
+        'anon', 'pseudonym', 'avatar', 'avatar_pal', 'strength',
+        'status', 'mod_source', 'mod_reason',
         'masked', 'self_harm', 'published_at',
     ];
 
@@ -44,12 +45,18 @@ class Post extends Model
     {
         return [
             'anon' => 'boolean',
+            'strength' => 'boolean',
             'masked' => 'boolean',
             'self_harm' => 'boolean',
             'published_at' => 'datetime',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];
+    }
+
+    public function hides(): HasMany
+    {
+        return $this->hasMany(PostHide::class);
     }
 
     public function author(): BelongsTo

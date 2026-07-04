@@ -15,7 +15,9 @@ return new class extends Migration
         Schema::create('circles', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('slug')->unique();
-            $table->string('theme');               // judul lingkaran
+            $table->string('theme');               // judul lingkaran (name)
+            $table->string('emoji')->nullable();   // ikon (UI)
+            $table->string('pal')->nullable();     // mint | peach | lav
             $table->text('description')->nullable();
             $table->unsignedInteger('member_count')->default(0);
             $table->timestampTz('created_at')->useCurrent();

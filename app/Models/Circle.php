@@ -16,7 +16,7 @@ class Circle extends Model
     const CREATED_AT = 'created_at';
     const UPDATED_AT = 'updated_at';
 
-    protected $fillable = ['slug', 'theme', 'description', 'member_count'];
+    protected $fillable = ['slug', 'theme', 'emoji', 'pal', 'description', 'member_count'];
 
     protected function casts(): array
     {

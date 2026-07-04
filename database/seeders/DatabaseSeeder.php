@@ -54,18 +54,27 @@ class DatabaseSeeder extends Seeder
         );
     }
 
+    /** Empat lingkaran identik `LData.circles` (lib/data/dummy_data.dart). */
     private function seedCircles(): void
     {
         $circles = [
-            ['theme' => 'Menjaga batas', 'description' => 'Belajar berkata cukup dengan lembut.'],
-            ['theme' => 'Berdamai dengan keluarga', 'description' => 'Ruang untuk luka & harapan pada keluarga.'],
-            ['theme' => 'Pelan-pelan pulih', 'description' => 'Menemani langkah kecil pemulihan.'],
+            ['theme' => 'Menjaga batas', 'emoji' => '🛡️', 'pal' => 'peach', 'members' => 1200,
+                'description' => 'Tempat aman untuk belajar berkata "tidak" dan menjaga energimu.'],
+            ['theme' => 'Berdamai dengan keluarga', 'emoji' => '🏡', 'pal' => 'mint', 'members' => 890,
+                'description' => 'Ruang pelan untuk memperbaiki & menerima hubungan keluarga.'],
+            ['theme' => 'Pulih pelan-pelan', 'emoji' => '🌱', 'pal' => 'lav', 'members' => 2100,
+                'description' => 'Langkah-langkah kecil menuju pulih — tanpa terburu-buru.'],
+            ['theme' => 'Syukur harian', 'emoji' => '💛', 'pal' => 'mint', 'members' => 3400,
+                'description' => 'Merayakan kebaikan-kebaikan kecil setiap hari, bersama.'],
         ];
 
         foreach ($circles as $c) {
             Circle::firstOrCreate(
                 ['slug' => Str::slug($c['theme'])],
-                ['theme' => $c['theme'], 'description' => $c['description']],
+                [
+                    'theme' => $c['theme'], 'emoji' => $c['emoji'], 'pal' => $c['pal'],
+                    'description' => $c['description'], 'member_count' => $c['members'],
+                ],
             );
         }
     }

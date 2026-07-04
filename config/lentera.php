@@ -19,17 +19,13 @@ return [
     ],
 
     /*
-    | "Kirim kekuatan" (§03) — pesan siap-pakai, TANPA teks bebas, instan tanpa
-    | antrean. Karena daftar ini sudah tervetting, kiriman yang memakainya
-    | langsung disetujui (tetap "pra-tayang" secara desain).
+    | "Kirim kekuatan" (§9) — pesan siap-pakai, TANPA teks bebas, instan tanpa
+    | pra-tayang. IDENTIK dengan `strengthReplies` di lib/data/dummy_data.dart.
     */
     'strength_messages' => [
-        'Kamu tidak sendirian. Pelan-pelan saja.',
-        'Hari ini berat, tapi kamu sudah bertahan sejauh ini. Itu luar biasa.',
-        'Aku mengirim kekuatan untukmu hari ini.',
-        'Napas dulu. Kamu cukup, apa adanya.',
-        'Semoga ada satu hal kecil yang menghangatkanmu hari ini.',
-        'Kamu layak diperlakukan dengan lembut — termasuk oleh dirimu sendiri.',
+        'Kamu nggak sendirian.',
+        'Pelan-pelan, kamu sudah cukup.',
+        'Aku kirim pelukan untukmu.',
     ],
 
     /*
@@ -41,15 +37,32 @@ return [
     ],
 
     /*
-    | Isyarat menyakiti diri (§06 penanganan khusus). Bila terdeteksi, kiriman
-    | DITAHAN (held) + ditandai self_harm + sinyal ke klien untuk menawarkan
+    | Alasan laporan (§10) — IDENTIK `reportReasons` di lib/data/dummy_data.dart.
+    | `self_harm_reason` menandai laporan krisis (penanganan khusus).
+    */
+    'report_reasons' => [
+        'Ujaran menyakiti / kasar',
+        'Spam / promosi',
+        'Tidak pantas',
+        'Pelecehan / perundungan',
+        'Isyarat menyakiti diri',
+        'Informasi salah',
+    ],
+    'self_harm_reason' => 'Isyarat menyakiti diri',
+
+    /*
+    | Isyarat menyakiti diri / krisis (§06/§10 penanganan khusus). Bila terdeteksi,
+    | kiriman DITAHAN (held) + ditandai self_harm + sinyal ke klien untuk menawarkan
     | Ruang Tenang — BUKAN blokir dingin.
+    |
+    | WAJIB IDENTIK dengan `crisisSignals` di lib/data/dummy_data.dart agar deteksi
+    | di app & server sama persis.
     */
     'self_harm_signals' => [
-        'ingin mati', 'akhiri hidup', 'akhiri semua', 'mengakhiri hidup',
-        'bunuh diri', 'menyakiti diri', 'melukai diri', 'tak sanggup lagi',
-        'tidak sanggup lagi', 'menyerah pada hidup', 'lebih baik mati',
-        'tak ada gunanya hidup', 'hilang saja',
+        'bunuh diri', 'mengakhiri hidup', 'akhiri hidup', 'tidak ingin hidup',
+        'ingin mati', 'pengen mati', 'menyerah saja', 'tak sanggup lagi',
+        'gak sanggup lagi', 'nggak sanggup lagi', 'menyakiti diri', 'lukai diri',
+        'capek hidup', 'lelah hidup', 'putus asa', 'hampa sekali',
     ],
 
     // Sumber bantuan yang ditawarkan saat penanganan khusus (§10: hotline menyusul).

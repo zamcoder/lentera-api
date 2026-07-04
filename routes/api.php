@@ -75,12 +75,9 @@ Route::prefix('v1')->group(function () {
     // ---------- Mood, Statistik & Rekap (§6) — JWT ----------
     require __DIR__.'/api_stats.php';
 
+    // ---------- Komunitas: Feed & Post (§7) — JWT ----------
+    require __DIR__.'/api_community.php';
+
     // ---------- Moderasi & konsol (§10 / §A5-A6) — JWT ----------
     require __DIR__.'/api_moderation.php';
 });
-
-/*
-| Domain berikut MASIH memakai Sanctum di /api (belum dimigrasikan ke v1/JWT).
-| Akan dipindah ke /api/v1 + JWT pada fase domainnya: Community (Fase 2).
-*/
-require __DIR__.'/api_community.php';

@@ -59,7 +59,7 @@ class ModerationConsoleTest extends TestCase
         $reporter = User::factory()->create();
         $post = Post::factory()->approved()->create();
         $this->actingAsJwt($reporter)
-            ->postJson('/api/v1/reports', ['post_id' => $post->id, 'reason' => 'harassment'])
+            ->postJson('/api/v1/reports', ['post_id' => $post->id, 'reason' => 'Pelecehan / perundungan'])
             ->assertCreated();
 
         // Moderator melihat & menindak.

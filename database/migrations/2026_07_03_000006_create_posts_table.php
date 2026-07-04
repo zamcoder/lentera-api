@@ -29,6 +29,9 @@ return new class extends Migration
             $table->text('body');
             $table->boolean('anon')->default(true);    // default anonim (§03)
             $table->string('pseudonym')->nullable();   // nama samaran lembut bila anon
+            $table->string('avatar')->nullable();      // emoji/inisial avatar (UI)
+            $table->string('avatar_pal')->nullable();  // mint | peach | lav
+            $table->boolean('strength')->default(false); // "Kirim kekuatan" (§9)
 
             // Moderasi (§06).
             $table->string('status')->default('pending');

@@ -20,7 +20,49 @@ class ModerationPipeline
     public function __construct(
         private readonly BannedWordFilter $filter,
         private readonly SelfHarmDetector $selfHarm,
+        private readonly GeminiModerator $gemini,
     ) {
+    }
+
+    /**
+     * Moderasi teks SINKRON & agnostik-model (dipakai untuk konten pendek yang
+     * butuh keputusan segera, mis. jawaban Prompt bersama §9). Menjalankan
+     * Lapis 0 (self-harm) + Lapis 1 (regex) + Lapis 2 (Gemini) langsung.
+     *
+     * @return array{status: string, self_harm: bool, reason: ?string, text: string, safe_space?: array}
+     */
+    public function moderateText(string $text): array
+    {
+        if ($this->selfHarm->detect($text)) {
+            return [
+                'status' => Post::STATUS_HELD, 'self_harm' => true,
+                'reason' => 'Isyarat menyakiti diri — penanganan khusus.',
+                'text' => $text, 'safe_space' => config('lentera.safe_space'),
+            ];
+        }
+
+        $scan = $this->filter->scan($text);
+        $this->filter->recordHits($scan['matched']);
+        if ($scan['blocked']) {
+            return ['status' => Post::STATUS_REJECTED, 'self_harm' => false, 'reason' => 'Mengandung kata yang tidak diperbolehkan.', 'text' => $text];
+        }
+        $text = $scan['masked'] ? $scan['text'] : $text;
+
+        $result = $this->gemini->classify($text);
+        $hold = (float) config('lentera.moderation.hold_threshold');
+        $reject = (float) config('lentera.moderation.reject_threshold');
+
+        if ($result['self_harm']) {
+            return ['status' => Post::STATUS_HELD, 'self_harm' => true, 'reason' => $result['reason'] ?: 'AI: isyarat menyakiti diri.', 'text' => $text, 'safe_space' => config('lentera.safe_space')];
+        }
+        if ($result['score'] >= $reject) {
+            return ['status' => Post::STATUS_REJECTED, 'self_harm' => false, 'reason' => $result['reason'] ?: 'AI: pelanggaran berat.', 'text' => $text];
+        }
+        if ($result['score'] >= $hold) {
+            return ['status' => Post::STATUS_HELD, 'self_harm' => false, 'reason' => $result['reason'] ?: 'AI: perlu tinjauan manusia.', 'text' => $text];
+        }
+
+        return ['status' => Post::STATUS_APPROVED, 'self_harm' => false, 'reason' => null, 'text' => $text];
     }
 
     /**

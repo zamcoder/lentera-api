@@ -1,36 +1,34 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api\V1\Community;
 
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Community\StoreReportRequest;
 use App\Models\Post;
 use App\Models\Report;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 /**
- * ReportController — pelaporan pengguna atas kiriman (§06, POST /reports).
- * Laporan masuk ke konsol admin (§07). Terbuka untuk semua pengguna terautentikasi.
+ * ReportController (v1, §10) — pelaporan pengguna atas kiriman. Masuk antrean
+ * konsol. Laporan "isyarat menyakiti diri" → tahan kiriman untuk penanganan khusus.
  */
 class ReportController extends Controller
 {
-    public function store(Request $request): JsonResponse
+    /** POST /api/v1/reports — laporkan kiriman. */
+    public function store(StoreReportRequest $request): JsonResponse
     {
-        $data = $request->validate([
-            'post_id' => ['required', 'uuid', 'exists:posts,id'],
-            'reason' => ['required', 'in:spam,harassment,self_harm,hate,other'],
-            'note' => ['nullable', 'string', 'max:500'],
-        ]);
+        $data = $request->validated();
 
         $report = Report::create([
             'post_id' => $data['post_id'],
-            'reporter_id' => $request->user()->id,
+            'reporter_id' => auth('api')->id(),
             'reason' => $data['reason'],
             'note' => $data['note'] ?? null,
             'status' => 'open',
         ]);
 
-        // Laporan self-harm → tandai kiriman untuk penanganan khusus & tahan.
-        if ($data['reason'] === 'self_harm') {
+        // Laporan krisis → tahan dari publik + tandai penanganan khusus (bukan blokir dingin).
+        if ($data['reason'] === config('lentera.self_harm_reason')) {
             $post = Post::find($data['post_id']);
             if ($post && $post->status === Post::STATUS_APPROVED) {
                 $post->forceFill([

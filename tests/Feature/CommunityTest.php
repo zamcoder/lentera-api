@@ -8,6 +8,9 @@ use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
+/**
+ * Komunitas §7 — Feed & Post, reaksi, hide (JWT, /api/v1). Moderasi pending→approved.
+ */
 class CommunityTest extends TestCase
 {
     use RefreshDatabase;
@@ -15,100 +18,94 @@ class CommunityTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        // Butuh banned_terms + circles + prompt hari ini.
-        $this->seed(DatabaseSeeder::class);
+        $this->seed(DatabaseSeeder::class); // banned_terms + circles + prompt
     }
 
-    private function user(): User
+    public function test_benign_post_approved_via_pipeline_appears_in_feed(): void
     {
+        // Queue sync di testing → Lapis 2 (stub) meng-approve.
         $user = User::factory()->create();
-        $this->actingAs($user, 'sanctum');
 
-        return $user;
-    }
-
-    public function test_benign_gratitude_post_is_approved_via_pipeline(): void
-    {
-        // Queue sync di testing → Lapis 2 (stub) jalan inline → approved.
-        $this->user();
-
-        $res = $this->postJson('/api/posts', [
-            'surface' => 'gratitude',
-            'body' => 'Hari ini Ibu menelepon dan itu menghangatkan hatiku.',
+        $res = $this->actingAsJwt($user)->postJson('/api/v1/community/posts', [
+            'text' => 'Bersyukur untuk teh hangat sore ini.',
         ])->assertCreated();
 
-        // Respons langsung menandai kiriman masuk antrean Lapis 2 (async).
         $this->assertTrue($res->json('moderation.queued'));
 
-        // Queue sync di testing → Lapis 2 (stub) meng-approve → muncul di feed.
-        $feed = $this->getJson('/api/feed?surface=gratitude')->assertOk();
+        $feed = $this->actingAsJwt($user)->getJson('/api/v1/community/feed')->assertOk();
         $this->assertCount(1, $feed->json('data'));
+        $this->assertSame('approved', $feed->json('data.0.status'));
     }
 
-    public function test_banned_word_is_rejected_instantly_layer1(): void
+    public function test_banned_word_rejected_instantly(): void
     {
-        $this->user();
+        $user = User::factory()->create();
 
-        $res = $this->postJson('/api/posts', [
-            'surface' => 'gratitude',
-            'body' => 'Kamu bodoh sekali.',
-        ])->assertCreated();
+        $res = $this->actingAsJwt($user)->postJson('/api/v1/community/posts', ['text' => 'Kamu bodoh sekali.'])
+            ->assertCreated();
 
         $this->assertSame('rejected', $res->json('moderation.status'));
-        // Tidak tampil di feed.
-        $this->getJson('/api/feed?surface=gratitude')->assertJsonCount(0, 'data');
+        $this->actingAsJwt($user)->getJson('/api/v1/community/feed')->assertJsonCount(0, 'data');
     }
 
-    public function test_self_harm_is_held_and_signals_safe_space(): void
+    public function test_self_harm_held_and_signals_safe_space(): void
     {
-        $this->user();
+        $user = User::factory()->create();
 
-        $res = $this->postJson('/api/posts', [
-            'surface' => 'gratitude',
-            'body' => 'Aku rasanya ingin mati saja, tak sanggup lagi.',
+        $res = $this->actingAsJwt($user)->postJson('/api/v1/community/posts', [
+            'text' => 'Aku capek hidup, rasanya ingin mati saja.',
         ])->assertCreated();
 
-        $res->assertJsonPath('moderation.status', 'held')
-            ->assertJsonPath('moderation.self_harm', true);
+        $res->assertJsonPath('moderation.status', 'held')->assertJsonPath('moderation.self_harm', true);
         $this->assertNotNull($res->json('moderation.safe_space'));
-        // Tertahan dari publik.
-        $this->getJson('/api/feed?surface=gratitude')->assertJsonCount(0, 'data');
     }
 
-    public function test_strength_requires_ready_made_message(): void
+    public function test_react_returns_counts_and_toggles(): void
     {
-        $this->user();
+        $author = User::factory()->create();
+        $post = Post::factory()->approved()->create();
 
-        // Teks bebas ditolak.
-        $this->postJson('/api/posts', [
-            'surface' => 'strength',
-            'body' => 'teks bebas sembarang',
-        ])->assertStatus(422);
+        $r = $this->actingAsJwt($author)->postJson("/api/v1/community/posts/{$post->id}/react", ['kind' => 'peluk'])
+            ->assertOk();
+        $r->assertJsonPath('reactions.peluk', 1);
+        $this->assertContains('peluk', $r->json('my_reactions'));
 
-        // Pesan siap-pakai → instan approved tanpa antrean.
-        $ready = config('lentera.strength_messages')[0];
-        $res = $this->postJson('/api/posts', ['surface' => 'strength', 'body' => $ready])
-            ->assertCreated();
-        $res->assertJsonPath('moderation.status', 'approved')
-            ->assertJsonPath('moderation.queued', false);
-    }
-
-    public function test_reaction_is_idempotent_and_hides_counts(): void
-    {
-        $author = $this->user();
-        $post = Post::factory()->create([
-            'author_id' => $author->id,
-            'status' => 'approved',
-            'published_at' => now(),
-        ]);
-
-        $r = $this->postJson("/api/posts/{$post->id}/react", ['kind' => 'hug'])->assertOk();
-        $r->assertJson(['reacted' => true, 'kind' => 'hug']);
-        // Respons tidak membocorkan jumlah reaksi (anti-cemas §03).
-        $this->assertArrayNotHasKey('count', $r->json());
-
-        // Idempoten: react lagi tak menggandakan.
-        $this->postJson("/api/posts/{$post->id}/react", ['kind' => 'hug'])->assertOk();
+        // idempoten
+        $this->actingAsJwt($author)->postJson("/api/v1/community/posts/{$post->id}/react", ['kind' => 'peluk'])
+            ->assertJsonPath('reactions.peluk', 1);
         $this->assertDatabaseCount('reactions', 1);
+
+        // batal
+        $this->actingAsJwt($author)->deleteJson("/api/v1/community/posts/{$post->id}/react", ['kind' => 'peluk'])
+            ->assertOk()->assertJsonPath('reactions.peluk', 0);
+    }
+
+    public function test_feed_returns_reaction_counts(): void
+    {
+        $viewer = User::factory()->create();
+        $post = Post::factory()->approved()->create();
+        User::factory()->count(2)->create()->each(function ($u) use ($post) {
+            $this->actingAsJwt($u)->postJson("/api/v1/community/posts/{$post->id}/react", ['kind' => 'kekuatan']);
+        });
+
+        $feed = $this->actingAsJwt($viewer)->getJson('/api/v1/community/feed')->assertOk();
+        $this->assertSame(2, $feed->json('data.0.reactions.kekuatan'));
+    }
+
+    public function test_hide_removes_from_my_feed_only(): void
+    {
+        $me = User::factory()->create();
+        $other = User::factory()->create();
+        $post = Post::factory()->approved()->create();
+
+        $this->actingAsJwt($me)->postJson("/api/v1/community/posts/{$post->id}/hide")->assertOk();
+
+        $this->actingAsJwt($me)->getJson('/api/v1/community/feed')->assertJsonCount(0, 'data');
+        $this->actingAsJwt($other)->getJson('/api/v1/community/feed')->assertJsonCount(1, 'data');
+    }
+
+    public function test_requires_auth(): void
+    {
+        $this->getJson('/api/v1/community/feed')->assertUnauthorized();
     }
 }

@@ -1,21 +1,25 @@
 <?php
 
+use App\Http\Controllers\Api\V1\Community\ModerationController;
+use App\Http\Controllers\Api\V1\Community\ReportController;
 use App\Http\Controllers\Console\AccountsController;
 use App\Http\Controllers\Console\MetricsController;
 use App\Http\Controllers\Console\QueueController;
 use App\Http\Controllers\Console\ReportsController;
 use App\Http\Controllers\Console\TermsController;
-use App\Http\Controllers\ReportController;
 use Illuminate\Support\Facades\Route;
 
 /*
-| MODERATION (§A5/§A6) — di /api/v1, auth JWT.
-| - POST /reports: terbuka untuk semua pengguna terautentikasi (§06).
+| MODERATION (§10 / §A5-A6) — di /api/v1, auth JWT.
+| - POST /reports + GET /moderation/banned-terms: semua pengguna terautentikasi (§10).
 | - /mod/*: gerbang admin — token JWT ber-scope 'mod' (hanya pasca-2FA) + role admin.
 */
 
-// Pelaporan pengguna.
-Route::middleware('auth:api')->post('/reports', [ReportController::class, 'store']);
+// Pelaporan pengguna & sinkron daftar moderasi (mobile).
+Route::middleware('auth:api')->group(function () {
+    Route::post('/reports', [ReportController::class, 'store']);
+    Route::get('/moderation/banned-terms', [ModerationController::class, 'bannedTerms']);
+});
 
 // Konsol moderasi — berlapis: JWT → middleware moderator (role admin + 2FA + scope mod).
 Route::middleware(['auth:api', 'moderator'])

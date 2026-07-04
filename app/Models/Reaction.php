@@ -10,10 +10,11 @@ class Reaction extends Model
 {
     use HasUuids;
 
-    public const KIND_HUG = 'hug';
-    public const KIND_STRENGTH = 'strength';
-    public const KIND_UNDERSTAND = 'understand';
-    public const KINDS = [self::KIND_HUG, self::KIND_STRENGTH, self::KIND_UNDERSTAND];
+    // Selaras reactionDefs app (dummy_data.dart): peluk · kekuatan · paham.
+    public const KIND_PELUK = 'peluk';
+    public const KIND_KEKUATAN = 'kekuatan';
+    public const KIND_PAHAM = 'paham';
+    public const KINDS = [self::KIND_PELUK, self::KIND_KEKUATAN, self::KIND_PAHAM];
 
     protected $table = 'reactions';
     public $incrementing = false;
