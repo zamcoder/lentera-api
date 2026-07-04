@@ -3,18 +3,21 @@
 namespace App\Services;
 
 use App\Models\OtpCode;
-use Illuminate\Support\Facades\Log;
+use App\Services\Otp\OtpDelivery;
 
 /**
- * OtpService — kode sekali-pakai untuk login HP & pemulihan. Kode disimpan
- * sebagai hash SHA-256 (tak pernah plaintext di DB). Di lingkungan lokal, kode
- * dikembalikan agar mudah diuji; di produksi dikirim via SMS/email (belum
- * terpasang — dicatat ke log sebagai placeholder).
+ * OtpService — kode sekali-pakai untuk login HP (WhatsApp) & pemulihan (Email).
+ * Kode disimpan sebagai hash SHA-256 (tak pernah plaintext di DB). Pengiriman
+ * ditangani OtpDelivery (email/WA); SMS tidak dipakai.
  */
 class OtpService
 {
     private const TTL_MINUTES = 5;
     private const MAX_ATTEMPTS = 5;
+
+    public function __construct(private readonly OtpDelivery $delivery)
+    {
+    }
 
     /** Terbitkan kode baru untuk identifier+purpose. Mengembalikan kode plaintext. */
     public function issue(string $identifier, string $purpose): string
@@ -28,8 +31,7 @@ class OtpService
             'expires_at' => now()->addMinutes(self::TTL_MINUTES),
         ]);
 
-        // TODO produksi: kirim via SMS/email provider.
-        Log::info("OTP {$purpose} untuk {$identifier}: {$code}");
+        $this->delivery->send($identifier, $purpose, $code);
 
         return $code;
     }

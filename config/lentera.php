@@ -66,6 +66,18 @@ return [
     ],
 
     /*
+    | OTP (§1) — kanal pengiriman: EMAIL (pemulihan) & WHATSAPP (login HP).
+    | SMS tidak dipakai. WA lewat gateway; provider 'log' = tulis ke log (dev/
+    | belum dikonfigurasi). Provider didukung: fonnte (ID) atau cloud (Meta).
+    */
+    'whatsapp' => [
+        'provider' => env('WA_PROVIDER', 'log'),   // log | fonnte | cloud
+        'token' => env('WA_TOKEN', ''),
+        'endpoint' => env('WA_ENDPOINT', ''),      // opsional override
+        'phone_id' => env('WA_PHONE_ID', ''),      // untuk Meta Cloud API
+    ],
+
+    /*
     | Hotline krisis per wilayah (§11). Kosong dulu → "Segera hadir".
     | Wajib diisi sebelum komunitas dibuka (§11 keputusan tercatat).
     */
