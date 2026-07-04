@@ -79,6 +79,14 @@ Field: `name_enc/name_nonce`, `rel_enc/rel_nonce`, `recall_enc/recall_nonce` (ba
 | POST | `/reports` | `{post_id, reason, note?}` (reason = label app) |
 | GET | `/moderation/banned-terms` | `{banned_terms[], crisis_signals[]}` — identik app |
 
+## Ringkasan AI (gated consent — plaintext, transien)
+| Method | Path | Catatan |
+|---|---|---|
+| POST | `/ai/summarize/person` | `{name, relation?, pos_count?, neg_count?, interactions[]}` → `{summary}` (hangat, 1-2 kalimat; `null` bila kosong/gagal) |
+| POST | `/ai/summarize/day` | `{date, mood_index?, moments[]}` → `{summary}` |
+
+> **Sengaja menembus E2E** hanya saat consent ON: app mengirim **plaintext** hasil dekripsi. Server **tak menyimpan/log** konten (transien; hasil di-cache by hash). Hanya panggil bila toggle "Ringkasan AI" aktif.
+
 ## Keselamatan (§11) & Pengaturan/Notifikasi (§12)
 | Method | Path | Catatan |
 |---|---|---|

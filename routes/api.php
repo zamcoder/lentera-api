@@ -76,4 +76,7 @@ Route::prefix('v1')->group(function () {
 
     // ---------- Moderasi & konsol (§10 / §A5-A6) — JWT ----------
     require __DIR__.'/api_moderation.php';
+
+    // ---------- Ringkasan AI (gated consent, opsional) — JWT ----------
+    require __DIR__.'/api_ai.php';
 });
