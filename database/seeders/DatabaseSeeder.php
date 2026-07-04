@@ -69,7 +69,9 @@ class DatabaseSeeder extends Seeder
         ];
 
         foreach ($circles as $c) {
-            Circle::firstOrCreate(
+            // updateOrCreate: memperbaiki baris lama (mis. emoji NULL) sekaligus
+            // menambah yang belum ada — idempoten & aman untuk reseed di prod.
+            Circle::updateOrCreate(
                 ['slug' => Str::slug($c['theme'])],
                 [
                     'theme' => $c['theme'], 'emoji' => $c['emoji'], 'pal' => $c['pal'],
