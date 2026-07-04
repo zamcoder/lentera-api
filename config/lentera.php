@@ -10,7 +10,7 @@ return [
     'moderation' => [
         // Gemini (§11: cloud, tier gratis). Kosong = pakai stub heuristik lokal.
         'gemini_key' => env('GEMINI_API_KEY', ''),
-        'gemini_model' => env('GEMINI_MODEL', 'gemini-2.0-flash'),
+        'gemini_model' => env('GEMINI_MODEL', 'gemini-flash-latest'),
         'gemini_endpoint' => env('GEMINI_ENDPOINT', 'https://generativelanguage.googleapis.com/v1beta'),
 
         // Ambang skor AI (0..1) untuk menahan/menolak.
