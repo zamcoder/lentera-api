@@ -78,6 +78,23 @@ return [
     ],
 
     /*
+    | Push notification (§12) — pengingat lembut malam. Driver 'log' (dev/belum
+    | dikonfigurasi) atau 'fcm' (Firebase Cloud Messaging HTTP v1). FCM_CREDENTIALS
+    | = path ke file service-account JSON dari Firebase Console.
+    | iOS memakai token FCM juga (aplikasi pakai Firebase Messaging).
+    */
+    'push' => [
+        'driver' => env('PUSH_DRIVER', 'log'),     // log | fcm
+        'fcm_credentials' => env('FCM_CREDENTIALS', ''),
+    ],
+
+    // Teks pengingat malam (§12) — satu notifikasi lock-screen, lembut.
+    'reminder' => [
+        'title' => 'Selamat malam 🌙',
+        'body' => 'Luangkan satu momen untuk hari ini — apa yang kamu syukuri?',
+    ],
+
+    /*
     | Hotline krisis per wilayah (§11). Kosong dulu → "Segera hadir".
     | Wajib diisi sebelum komunitas dibuka (§11 keputusan tercatat).
     */
