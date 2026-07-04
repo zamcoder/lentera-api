@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Stats\SetMoodRequest;
 use App\Models\Mood;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Carbon;
 
 /**
  * MoodController (v1) — set mood harian (§6). Satu mood per hari (upsert).
@@ -16,7 +17,10 @@ class MoodController extends Controller
     public function store(SetMoodRequest $request): JsonResponse
     {
         $data = $request->validated();
-        $date = isset($data['date']) ? \Illuminate\Support\Carbon::parse($data['date'])->toDateString() : now()->toDateString();
+        // Default tanggal = hari lokal user (WIB), agar konsisten dgn /today & chart.
+        $date = isset($data['date'])
+            ? Carbon::parse($data['date'])->toDateString()
+            : Carbon::now(config('lentera.timezone'))->toDateString();
 
         $mood = Mood::updateOrCreate(
             ['user_id' => auth('api')->id(), 'mood_date' => $date],

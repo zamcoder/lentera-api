@@ -25,14 +25,17 @@ class StatsController extends Controller
     public function summary(Request $request): JsonResponse
     {
         $uid = auth('api')->id();
+        $tz = config('lentera.timezone');
         $days = $request->string('range')->toString() === 'month' ? 30 : 7;
-        $start = today()->subDays($days - 1);
+        $today = Carbon::now($tz)->startOfDay();
+        $start = $today->copy()->subDays($days - 1);
 
-        // Hitungan per hari+type dalam rentang.
+        // Hitungan per hari+type — dikelompokkan per tanggal LOKAL user (bukan UTC).
+        // Window di-bind sebagai instant UTC (sesi DB = UTC) agar tak tergeser 7 jam.
         $byDay = [];
         Interaction::where('user_id', $uid)
-            ->whereBetween('occurred_at', [$start->copy()->startOfDay(), now()->endOfDay()])
-            ->selectRaw('(occurred_at)::date as d, type, count(*) as c')
+            ->whereBetween('occurred_at', [$start->copy()->utc(), $today->copy()->endOfDay()->utc()])
+            ->selectRaw('(occurred_at AT TIME ZONE ?)::date as d, type, count(*) as c', [$tz])
             ->groupBy('d', 'type')
             ->get()
             ->each(function ($row) use (&$byDay) {
@@ -40,7 +43,7 @@ class StatsController extends Controller
             });
 
         $moods = Mood::where('user_id', $uid)
-            ->whereBetween('mood_date', [$start->toDateString(), today()->toDateString()])
+            ->whereBetween('mood_date', [$start->toDateString(), $today->toDateString()])
             ->get()
             ->keyBy(fn ($m) => $m->mood_date->toDateString());
 
@@ -60,8 +63,8 @@ class StatsController extends Controller
         return response()->json([
             'range' => $days === 30 ? 'month' : 'week',
             'week' => $series,                       // seri per hari (WeekDay)
-            'distribution' => $this->distribution($uid, $start),
-            'streak' => $this->streak($uid),
+            'distribution' => $this->distribution($uid, $start, $tz),
+            'streak' => $this->streak($uid, $tz),
             'recap' => $this->recap($uid),           // "Paling kamu syukuri"
         ]);
     }
@@ -72,7 +75,7 @@ class StatsController extends Controller
      */
     public function moodMonth(Request $request): JsonResponse
     {
-        $month = $request->string('month')->toString() ?: today()->format('Y-m');
+        $month = $request->string('month')->toString() ?: Carbon::now(config('lentera.timezone'))->format('Y-m');
         abort_unless(preg_match('/^\d{4}-\d{2}$/', $month), 422, 'Format bulan harus YYYY-MM.');
 
         $start = Carbon::createFromFormat('Y-m-d', $month.'-01')->startOfDay();
@@ -95,15 +98,17 @@ class StatsController extends Controller
     public function today(): JsonResponse
     {
         $uid = auth('api')->id();
-        [$start, $end] = [today()->startOfDay(), today()->endOfDay()];
+        $now = Carbon::now(config('lentera.timezone'));
+        // Batas hari LOKAL, tapi di-bind sebagai instant UTC (sesi DB = UTC).
+        [$start, $end] = [$now->copy()->startOfDay()->utc(), $now->copy()->endOfDay()->utc()];
 
         $counts = Interaction::where('user_id', $uid)
             ->whereBetween('occurred_at', [$start, $end])
             ->selectRaw('type, count(*) c')->groupBy('type')->pluck('c', 'type');
 
         return response()->json([
-            'date' => today()->toDateString(),
-            'mood_index' => Mood::where('user_id', $uid)->where('mood_date', today()->toDateString())->value('mood_index'),
+            'date' => $now->toDateString(),
+            'mood_index' => Mood::where('user_id', $uid)->where('mood_date', $now->toDateString())->value('mood_index'),
             'counts' => [
                 'positive' => (int) ($counts[Interaction::TYPE_POSITIVE] ?? 0),
                 'negative' => (int) ($counts[Interaction::TYPE_NEGATIVE] ?? 0),
@@ -117,10 +122,10 @@ class StatsController extends Controller
         ]);
     }
 
-    private function distribution(string $uid, Carbon $start): array
+    private function distribution(string $uid, Carbon $start, string $tz): array
     {
         $d = Interaction::where('user_id', $uid)
-            ->whereBetween('occurred_at', [$start->copy()->startOfDay(), now()->endOfDay()])
+            ->whereBetween('occurred_at', [$start->copy()->utc(), Carbon::now($tz)->endOfDay()->utc()])
             ->selectRaw('type, count(*) c')->groupBy('type')->pluck('c', 'type');
 
         return [
@@ -131,16 +136,16 @@ class StatsController extends Controller
     }
 
     /** Rentetan hari berturut (mundur dari hari ini) yang ada momennya. */
-    private function streak(string $uid): int
+    private function streak(string $uid, string $tz): int
     {
         $dates = Interaction::where('user_id', $uid)
-            ->selectRaw('distinct (occurred_at)::date as d')
+            ->selectRaw('distinct (occurred_at AT TIME ZONE ?)::date as d', [$tz])
             ->pluck('d')
             ->map(fn ($d) => Carbon::parse($d)->toDateString())
             ->flip();
 
         $streak = 0;
-        $cur = today();
+        $cur = Carbon::now($tz)->startOfDay();
         while ($dates->has($cur->toDateString())) {
             $streak++;
             $cur = $cur->subDay();

@@ -4,6 +4,14 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Zona waktu tampilan (§6) — dipakai untuk mem-bucket statistik/kalender
+    | harian berdasarkan tanggal LOKAL user, bukan UTC. Penyimpanan tetap UTC.
+    |--------------------------------------------------------------------------
+    */
+    'timezone' => env('LENTERA_TZ', 'Asia/Jakarta'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Moderasi (§06)
     |--------------------------------------------------------------------------
     */
