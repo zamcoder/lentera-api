@@ -189,8 +189,12 @@ return [
 
         Watchers\NotificationWatcher::class => env('TELESCOPE_NOTIFICATION_WATCHER', true),
 
+        // Default NONAKTIF: jurnal E2E memakai kolom BYTEA yang di-bind sebagai
+        // stream resource (PDO LOB). QueryWatcher memanggil PDO::quote() pada
+        // binding tsb → TypeError "resource given" → SEMUA insert binary 500
+        // (interactions/media/vault). Biarkan mati untuk app ini.
         Watchers\QueryWatcher::class => [
-            'enabled' => env('TELESCOPE_QUERY_WATCHER', true),
+            'enabled' => env('TELESCOPE_QUERY_WATCHER', false),
             'ignore_packages' => true,
             'ignore_paths' => [],
             'slow' => 100,
