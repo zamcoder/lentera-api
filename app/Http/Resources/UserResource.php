@@ -7,8 +7,11 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
  * UserResource — bentuk profil akun untuk /me & respons auth (§1 API_REQUIREMENTS:
- * "profil akun + metode login + status sinkron"). Tak pernah membocorkan kolom
- * kripto (kdf_salt/totp_secret_enc).
+ * "profil akun + metode login + status sinkron").
+ *
+ * kdf_salt DIKEMBALIKAN (base64): salt KDF bukan rahasia — keamanan berasal dari
+ * passphrase, dan device WAJIB memperolehnya untuk menurunkan kunci yang sama di
+ * perangkat baru / setelah re-install. totp_secret_enc tetap TIDAK pernah bocor.
  */
 class UserResource extends JsonResource
 {
@@ -21,6 +24,8 @@ class UserResource extends JsonResource
             'role' => $this->role,
             'status' => $this->status,
             'totp_enabled' => (bool) $this->totp_enabled,
+            // Salt untuk Argon2id di device (base64). Server tak pernah menurunkan kunci.
+            'kdf_salt' => $this->kdf_salt ? base64_encode($this->kdf_salt) : null,
             // Metode login terhubung (email/phone/google/apple).
             'providers' => $this->whenLoaded(
                 'identities',

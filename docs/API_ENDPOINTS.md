@@ -4,6 +4,8 @@ Base: **`/api/v1`** · JSON · Auth **JWT** (`Authorization: Bearer <token>`, ke
 
 Dua bidang data: **jurnal E2E** (`*_enc` = ciphertext base64 dari device, server buta) vs **komunitas plaintext-dimoderasi**.
 
+**Kontrak kripto E2E (WAJIB sama di device):** `key = Argon2id(passphrase, kdf_salt)`; tiap record `nonce` acak **96-bit (12 byte)**; algoritma **AES-256-GCM**. Format simpan: `*_nonce` = nonce (base64) terpisah; `*_enc` = **ciphertext + tag GCM 16-byte digabung** (base64). `kdf_salt` (16 byte) dibuat device saat register & dikirim base64; bila tak dikirim server buat sendiri. **Selalu baca `kdf_salt` dari respons auth/`/me`** — server menyimpan & mengembalikannya (bukan rahasia; kunci tak pernah ke server).
+
 ## Auth & Akun (§1)
 | Method | Path | Auth | Catatan |
 |---|---|---|---|
@@ -15,7 +17,7 @@ Dua bidang data: **jurnal E2E** (`*_enc` = ciphertext base64 dari device, server
 | POST | `/auth/2fa/verify` | pending JWT | → token (admin: scope `mod`) |
 | POST | `/auth/2fa/setup` · `/enable` · `/disable` | JWT (admin) | TOTP |
 | POST | `/auth/refresh` | JWT (boleh kedaluwarsa) | token lama→baru (blacklist lama); token APP (mod hanya via 2FA) |
-| GET | `/me` | JWT | profil + providers + status sinkron |
+| GET | `/me` | JWT | profil + providers + status sinkron + **`kdf_salt`** (base64) |
 | POST | `/auth/logout` | JWT | cabut (blacklist) token |
 
 ## Vault E2E (§2)
