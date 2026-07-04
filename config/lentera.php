@@ -71,10 +71,12 @@ return [
     | belum dikonfigurasi). Provider didukung: fonnte (ID) atau cloud (Meta).
     */
     'whatsapp' => [
-        'provider' => env('WA_PROVIDER', 'log'),   // log | fonnte | cloud
+        'provider' => env('WA_PROVIDER', 'log'),   // log | gowa | fonnte | cloud
         'token' => env('WA_TOKEN', ''),
-        'endpoint' => env('WA_ENDPOINT', ''),      // opsional override
+        'endpoint' => env('WA_ENDPOINT', ''),      // gowa: base URL (mis. http://127.0.0.1:3000)
         'phone_id' => env('WA_PHONE_ID', ''),      // untuk Meta Cloud API
+        'username' => env('WA_USERNAME', ''),      // gowa: basic-auth user
+        'password' => env('WA_PASSWORD', ''),      // gowa: basic-auth pass
     ],
 
     /*
