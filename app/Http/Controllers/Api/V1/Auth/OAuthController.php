@@ -50,6 +50,10 @@ class OAuthController extends Controller
             $user = User::create([
                 'handle' => Pseudonym::unique(),
                 'email' => $claims['email'] ?? null,
+                // kdf_salt: device Google tak pernah membuatnya saat register.
+                // Server generate acak (opsi A) agar user Google bisa menurunkan
+                // kunci E2E dari passphrase yang di-set app pasca-login pertama.
+                'kdf_salt' => random_bytes(16),
                 'role' => 'user',
                 'status' => 'active',
             ]);

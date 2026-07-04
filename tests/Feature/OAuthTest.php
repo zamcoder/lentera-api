@@ -31,9 +31,12 @@ class OAuthTest extends TestCase
             ], 200),
         ]);
 
-        $this->postJson('/api/v1/auth/oauth', ['provider' => 'google', 'id_token' => 'dummy'])
+        $res = $this->postJson('/api/v1/auth/oauth', ['provider' => 'google', 'id_token' => 'dummy'])
             ->assertStatus(200)
-            ->assertJsonStructure(['token', 'user' => ['id']]);
+            ->assertJsonStructure(['token', 'user' => ['id', 'kdf_salt']]);
+
+        // Akun Google WAJIB dapat kdf_salt (opsi A) agar E2E bisa jalan.
+        $this->assertNotNull($res->json('user.kdf_salt'));
 
         $this->assertDatabaseHas('auth_identities', [
             'provider' => 'google', 'identifier' => '1234567890',
