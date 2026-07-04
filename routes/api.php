@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\SubscriberController;
 use App\Http\Controllers\Api\V1\Auth\AuthController;
 use App\Http\Controllers\Api\V1\Auth\OAuthController;
 use App\Http\Controllers\Api\V1\Auth\OtpController;
@@ -16,6 +17,10 @@ use Illuminate\Support\Facades\Route;
 | Auth JWT (tymon/jwt-auth). Domain jurnal E2E & komunitas menyusul per fase.
 | Referensi kebenaran: API_REQUIREMENTS.md, lib/data/models.dart.
 */
+
+// ---------- Waitlist landing page (temanlentera.id) — di /api (bukan v1) ----------
+Route::post('/subscribe', [SubscriberController::class, 'store'])->middleware('throttle:10,1');
+Route::get('/subscribers', [SubscriberController::class, 'index'])->middleware('auth:api');
 
 Route::prefix('v1')->group(function () {
 
