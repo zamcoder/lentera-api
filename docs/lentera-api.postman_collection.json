@@ -1,0 +1,183 @@
+{
+  "info": {
+    "name": "Lentera API (v1)",
+    "description": "REST API Lentera — jurnal E2E + komunitas dimoderasi. Semua di /api/v1, JWT (Bearer). Jalankan Auth > Register/Login dulu; token tersimpan otomatis ke variable {{token}}.\n\nCatatan E2E: field *_enc dikirim sudah terenkripsi dari device (base64 ciphertext). Contoh di sini memakai byte acak sebagai placeholder.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://127.0.0.1:8000/api/v1" },
+    { "key": "token", "value": "" },
+    { "key": "pending_token", "value": "" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+  },
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        { "name": "GET /health", "request": { "auth": { "type": "noauth" }, "method": "GET", "url": "{{base_url}}/health" } }
+      ]
+    },
+    {
+      "name": "1. Auth & Akun",
+      "item": [
+        {
+          "name": "POST /auth/register",
+          "event": [{ "listen": "test", "script": { "exec": ["const j=pm.response.json(); if(j.token){pm.collectionVariables.set('token', j.token);}"] } }],
+          "request": {
+            "auth": { "type": "noauth" }, "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Accept", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"budi@contoh.id\",\n  \"password\": \"rahasia123\",\n  \"password_confirmation\": \"rahasia123\",\n  \"kdf_salt\": null\n}" },
+            "url": "{{base_url}}/auth/register"
+          }
+        },
+        {
+          "name": "POST /auth/login",
+          "event": [{ "listen": "test", "script": { "exec": ["const j=pm.response.json(); if(j.token){pm.collectionVariables.set('token', j.token);} if(j.pending_token){pm.collectionVariables.set('pending_token', j.pending_token);}"] } }],
+          "request": {
+            "auth": { "type": "noauth" }, "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Accept", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"budi@contoh.id\",\n  \"password\": \"rahasia123\"\n}" },
+            "url": "{{base_url}}/auth/login"
+          }
+        },
+        {
+          "name": "POST /auth/oauth",
+          "request": { "auth": { "type": "noauth" }, "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"provider\": \"google\",\n  \"sub\": \"google-uid-123\",\n  \"email\": \"g@contoh.id\"\n}" }, "url": "{{base_url}}/auth/oauth" }
+        },
+        {
+          "name": "POST /auth/otp/request",
+          "request": { "auth": { "type": "noauth" }, "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"phone\": \"+6281234567890\"\n}" }, "url": "{{base_url}}/auth/otp/request" }
+        },
+        {
+          "name": "POST /auth/otp/verify",
+          "event": [{ "listen": "test", "script": { "exec": ["const j=pm.response.json(); if(j.token){pm.collectionVariables.set('token', j.token);}"] } }],
+          "request": { "auth": { "type": "noauth" }, "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"phone\": \"+6281234567890\",\n  \"code\": \"123456\"\n}" }, "url": "{{base_url}}/auth/otp/verify" }
+        },
+        {
+          "name": "POST /auth/recovery",
+          "request": { "auth": { "type": "noauth" }, "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"email\": \"budi@contoh.id\"\n}" }, "url": "{{base_url}}/auth/recovery" }
+        },
+        {
+          "name": "POST /auth/recovery/confirm",
+          "request": { "auth": { "type": "noauth" }, "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"email\": \"budi@contoh.id\",\n  \"code\": \"123456\",\n  \"password\": \"barusaja99\",\n  \"password_confirmation\": \"barusaja99\"\n}" }, "url": "{{base_url}}/auth/recovery/confirm" }
+        },
+        {
+          "name": "POST /auth/2fa/verify (pending token)",
+          "event": [{ "listen": "test", "script": { "exec": ["const j=pm.response.json(); if(j.token){pm.collectionVariables.set('token', j.token);}"] } }],
+          "request": { "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{pending_token}}" }] }, "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"code\": \"123456\"\n}" }, "url": "{{base_url}}/auth/2fa/verify" }
+        },
+        { "name": "POST /auth/2fa/setup", "request": { "method": "POST", "url": "{{base_url}}/auth/2fa/setup" } },
+        { "name": "POST /auth/2fa/enable", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"code\": \"123456\"\n}" }, "url": "{{base_url}}/auth/2fa/enable" } },
+        { "name": "POST /auth/2fa/disable", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"code\": \"123456\"\n}" }, "url": "{{base_url}}/auth/2fa/disable" } },
+        { "name": "GET /me", "request": { "method": "GET", "url": "{{base_url}}/me" } },
+        { "name": "POST /auth/logout", "request": { "method": "POST", "url": "{{base_url}}/auth/logout" } }
+      ]
+    },
+    {
+      "name": "2. Vault (E2E)",
+      "item": [
+        { "name": "GET /vault/status", "request": { "method": "GET", "url": "{{base_url}}/vault/status" } },
+        { "name": "PUT /vault/backup", "request": { "method": "PUT", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"ciphertext\": \"BASE64_CIPHERTEXT\",\n  \"version\": 1,\n  \"checksum\": null\n}" }, "url": "{{base_url}}/vault/backup" } },
+        { "name": "GET /vault/restore", "request": { "method": "GET", "url": "{{base_url}}/vault/restore" } },
+        { "name": "DELETE /vault/backup", "request": { "method": "DELETE", "url": "{{base_url}}/vault/backup" } }
+      ]
+    },
+    {
+      "name": "3. Orang (People)",
+      "item": [
+        { "name": "GET /people", "request": { "method": "GET", "url": "{{base_url}}/people" } },
+        { "name": "POST /people", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"name_enc\": \"BASE64\",\n  \"name_nonce\": \"BASE64\",\n  \"rel_enc\": \"BASE64\",\n  \"rel_nonce\": \"BASE64\",\n  \"avatar_color\": \"mint\"\n}" }, "url": "{{base_url}}/people" } },
+        { "name": "PUT /people/{id}", "request": { "method": "PUT", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"name_enc\": \"BASE64\",\n  \"name_nonce\": \"BASE64\"\n}" }, "url": "{{base_url}}/people/:id" } },
+        { "name": "DELETE /people/{id}", "request": { "method": "DELETE", "url": "{{base_url}}/people/:id" } }
+      ]
+    },
+    {
+      "name": "4. Momen/Interaksi + Media",
+      "item": [
+        { "name": "GET /interactions", "request": { "method": "GET", "url": { "raw": "{{base_url}}/interactions?person_id=&type=&cursor=", "host": ["{{base_url}}"], "path": ["interactions"], "query": [{ "key": "person_id", "value": "" }, { "key": "type", "value": "" }, { "key": "cursor", "value": "" }] } } },
+        { "name": "POST /interactions", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"type\": \"positive\",\n  \"text_enc\": \"BASE64\",\n  \"text_nonce\": \"BASE64\",\n  \"topic\": \"Keluarga\",\n  \"mood\": 3,\n  \"person_ids\": [],\n  \"media_ids\": []\n}" }, "url": "{{base_url}}/interactions" } },
+        { "name": "PUT /interactions/{id}", "request": { "method": "PUT", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"type\": \"neutral\"\n}" }, "url": "{{base_url}}/interactions/:id" } },
+        { "name": "DELETE /interactions/{id}", "request": { "method": "DELETE", "url": "{{base_url}}/interactions/:id" } },
+        { "name": "POST /media", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"kind\": \"photo\",\n  \"blob\": \"BASE64_CIPHERTEXT\",\n  \"nonce\": \"BASE64\",\n  \"mime\": \"image/jpeg\"\n}" }, "url": "{{base_url}}/media" } },
+        { "name": "GET /media/{id}", "request": { "method": "GET", "url": "{{base_url}}/media/:id" } }
+      ]
+    },
+    {
+      "name": "5. Mood, Stats & Today",
+      "item": [
+        { "name": "GET /stats/summary", "request": { "method": "GET", "url": { "raw": "{{base_url}}/stats/summary?range=week", "host": ["{{base_url}}"], "path": ["stats", "summary"], "query": [{ "key": "range", "value": "week" }] } } },
+        { "name": "POST /mood", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"mood_index\": 4,\n  \"date\": null\n}" }, "url": "{{base_url}}/mood" } },
+        { "name": "GET /today", "request": { "method": "GET", "url": "{{base_url}}/today" } }
+      ]
+    },
+    {
+      "name": "7. Komunitas — Feed & Post",
+      "item": [
+        { "name": "GET /community/feed", "request": { "method": "GET", "url": { "raw": "{{base_url}}/community/feed?cursor=", "host": ["{{base_url}}"], "path": ["community", "feed"], "query": [{ "key": "cursor", "value": "" }, { "key": "circle_id", "value": "", "disabled": true }] } } },
+        { "name": "POST /community/posts", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"text\": \"Bersyukur untuk teh hangat sore ini.\",\n  \"anon\": true,\n  \"surface\": \"gratitude\",\n  \"circle_id\": null\n}" }, "url": "{{base_url}}/community/posts" } },
+        { "name": "GET /community/posts/{id}", "request": { "method": "GET", "url": "{{base_url}}/community/posts/:id" } },
+        { "name": "POST /community/posts/{id}/react", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"kind\": \"peluk\"\n}" }, "url": "{{base_url}}/community/posts/:id/react" } },
+        { "name": "DELETE /community/posts/{id}/react", "request": { "method": "DELETE", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"kind\": \"peluk\"\n}" }, "url": "{{base_url}}/community/posts/:id/react" } },
+        { "name": "POST /community/posts/{id}/hide", "request": { "method": "POST", "url": "{{base_url}}/community/posts/:id/hide" } }
+      ]
+    },
+    {
+      "name": "8. Lingkaran (Circles)",
+      "item": [
+        { "name": "GET /circles", "request": { "method": "GET", "url": "{{base_url}}/circles" } },
+        { "name": "GET /circles/{id}", "request": { "method": "GET", "url": "{{base_url}}/circles/:id" } },
+        { "name": "GET /circles/{id}/feed", "request": { "method": "GET", "url": "{{base_url}}/circles/:id/feed" } },
+        { "name": "POST /circles/{id}/join", "request": { "method": "POST", "url": "{{base_url}}/circles/:id/join" } },
+        { "name": "DELETE /circles/{id}/join", "request": { "method": "DELETE", "url": "{{base_url}}/circles/:id/join" } }
+      ]
+    },
+    {
+      "name": "9. Prompt & Kirim kekuatan",
+      "item": [
+        { "name": "GET /prompts/today", "request": { "method": "GET", "url": "{{base_url}}/prompts/today" } },
+        { "name": "GET /prompts/today/answers", "request": { "method": "GET", "url": "{{base_url}}/prompts/today/answers" } },
+        { "name": "POST /prompts/today/answers", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"text\": \"Kopi hangat pagi ini.\",\n  \"anon\": true\n}" }, "url": "{{base_url}}/prompts/today/answers" } },
+        { "name": "GET /strength/queue", "request": { "method": "GET", "url": "{{base_url}}/strength/queue" } },
+        { "name": "POST /strength/{postId}/send", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"message\": \"Kamu nggak sendirian.\"\n}" }, "url": "{{base_url}}/strength/:postId/send" } }
+      ]
+    },
+    {
+      "name": "10. Laporan & Moderasi (mobile)",
+      "item": [
+        { "name": "POST /reports", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"post_id\": \":id\",\n  \"reason\": \"Spam / promosi\",\n  \"note\": null\n}" }, "url": "{{base_url}}/reports" } },
+        { "name": "GET /moderation/banned-terms", "request": { "method": "GET", "url": "{{base_url}}/moderation/banned-terms" } }
+      ]
+    },
+    {
+      "name": "11-12. Keselamatan & Pengaturan",
+      "item": [
+        { "name": "GET /safety/hotlines", "request": { "method": "GET", "url": { "raw": "{{base_url}}/safety/hotlines?region=ID", "host": ["{{base_url}}"], "path": ["safety", "hotlines"], "query": [{ "key": "region", "value": "ID" }] } } },
+        { "name": "GET /settings", "request": { "method": "GET", "url": "{{base_url}}/settings" } },
+        { "name": "PUT /settings", "request": { "method": "PUT", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"theme\": \"dark\",\n  \"accent\": \"lavender\"\n}" }, "url": "{{base_url}}/settings" } },
+        { "name": "PUT /settings/sync", "request": { "method": "PUT", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"enabled\": true\n}" }, "url": "{{base_url}}/settings/sync" } },
+        { "name": "PUT /settings/reminder", "request": { "method": "PUT", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"enabled\": true,\n  \"at\": \"21:00\"\n}" }, "url": "{{base_url}}/settings/reminder" } },
+        { "name": "POST /notifications/token", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"token\": \"fcm-device-token\",\n  \"platform\": \"fcm\"\n}" }, "url": "{{base_url}}/notifications/token" } }
+      ]
+    },
+    {
+      "name": "Konsol Moderasi (admin, scope mod)",
+      "description": "Butuh admin ber-2FA. Login admin → 2fa/verify → token ber-scope mod.",
+      "item": [
+        { "name": "GET /mod/queue", "request": { "method": "GET", "url": "{{base_url}}/mod/queue" } },
+        { "name": "POST /mod/action", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"post_id\": \":id\",\n  \"action\": \"approve\",\n  \"reason\": null\n}" }, "url": "{{base_url}}/mod/action" } },
+        { "name": "GET /mod/reports", "request": { "method": "GET", "url": "{{base_url}}/mod/reports" } },
+        { "name": "POST /mod/reports/action", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"post_id\": \":id\",\n  \"decision\": \"hide\"\n}" }, "url": "{{base_url}}/mod/reports/action" } },
+        { "name": "GET /mod/terms", "request": { "method": "GET", "url": "{{base_url}}/mod/terms" } },
+        { "name": "POST /mod/terms", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"pattern\": \"katakasar\"\n}" }, "url": "{{base_url}}/mod/terms" } },
+        { "name": "GET /mod/terms/suggest", "request": { "method": "GET", "url": { "raw": "{{base_url}}/mod/terms/suggest?term=bodoh", "host": ["{{base_url}}"], "path": ["mod", "terms", "suggest"], "query": [{ "key": "term", "value": "bodoh" }] } } },
+        { "name": "DELETE /mod/terms/{id}", "request": { "method": "DELETE", "url": "{{base_url}}/mod/terms/:id" } },
+        { "name": "GET /mod/accounts", "request": { "method": "GET", "url": "{{base_url}}/mod/accounts" } },
+        { "name": "POST /mod/accounts/{id}/action", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"action\": \"block\"\n}" }, "url": "{{base_url}}/mod/accounts/:id/action" } },
+        { "name": "GET /mod/metrics", "request": { "method": "GET", "url": "{{base_url}}/mod/metrics" } }
+      ]
+    }
+  ]
+}
