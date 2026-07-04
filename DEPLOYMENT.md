@@ -279,15 +279,20 @@ sudo supervisorctl start lentera-worker:*
 
 ---
 
-## 10. (Opsional) Penjadwal
+## 10. Penjadwal (wajib untuk pengingat malam)
 
-Jika nanti menambah tugas terjadwal (mis. rotasi prompt harian), aktifkan cron:
+Command `lentera:reminders` dijadwalkan tiap menit (`routes/console.php`) dan
+mengirim push ke pengguna yang mengaktifkan pengingat pada jam cocok. Aktifkan
+cron Laravel:
 
 ```bash
 sudo crontab -u www-data -e
-# tambahkan:
+# tambahkan satu baris:
 * * * * * cd /var/www/lentera-api && php artisan schedule:run >> /dev/null 2>&1
 ```
+
+Cek: `php artisan schedule:list` harus menampilkan `lentera:reminders`. Tanpa
+cron ini, pengingat malam tak pernah terkirim.
 
 ---
 
@@ -355,6 +360,9 @@ Anda) → setup 2FA → konsol moderasi siap.
 - **Auth:** kirim `Authorization: Bearer <JWT>` di semua request kecuali grup
   `/auth/*` publik. Token didapat dari register/login/otp/oauth. Simpan aman
   (`flutter_secure_storage`).
+- **Refresh:** saat token hampir/kedaluwarsa, `POST /auth/refresh` dengan token
+  lama di header → token baru (token lama otomatis di-blacklist). Bila gagal
+  (di luar `refresh_ttl`), minta login ulang.
 - **CORS:** aplikasi Flutter **native** tak terpengaruh CORS (hanya browser).
   Tak perlu setting apa pun di server untuk itu.
 - **E2E (harga mati):** enkripsi jurnal terjadi **di device**. Server hanya
@@ -368,20 +376,45 @@ Anda) → setup 2FA → konsol moderasi siap.
 
 ---
 
-## 16. Yang BELUM otomatis (perlu dilengkapi sebelum fitur terkait dipakai)
+## 16. Integrasi eksternal — kode SUDAH ada, tinggal isi kredensial
 
-| Fitur | Status saat ini | Yang perlu disiapkan |
+Semua fitur di bawah **sudah terimplementasi** dengan pola *fallback aman*: bila
+kredensial kosong, jalur "log/stub" dipakai (tak error). Isi env + langkah di
+kolom kanan untuk mengaktifkan yang nyata.
+
+| Fitur | Default (belum dikonfigurasi) | Cara mengaktifkan |
 |---|---|---|
-| **OTP HP** (`/auth/otp/*`) | Kode **ditulis ke log** (`storage/logs`), belum dikirim | Provider SMS (Twilio/Vonage) — implementasi kirim di `OtpService` |
-| **OTP email / pemulihan** | Kode ke log | Set **SMTP** (§5) — begitu MAIL_* diisi, kirim email nyata perlu ditambah di `OtpService` (kini masih `Log::info`) |
-| **Push notification / pengingat malam** | Device token **disimpan** (`/notifications/token`), tapi **belum ada pengirim** | Kredensial **FCM** (Android) / **APNs** (iOS) + command terjadwal yang mengirim push pada `reminder_at` (cron `schedule:run`, §10) |
-| **Hotline krisis** (`/safety/hotlines`) | "Segera hadir" (kosong) | Isi `config/lentera.php` → `hotlines` per wilayah **sebelum komunitas dibuka** |
-| **Moderasi AI** | Stub heuristik bila `GEMINI_API_KEY` kosong | Isi `GEMINI_API_KEY` untuk klasifikasi Gemini nyata |
-| **Refresh token JWT** | Belum ada endpoint refresh | Naikkan `JWT_TTL` (§5) atau tambah endpoint refresh bila perlu sesi panjang |
+| **OTP email** (pemulihan) | Email ditulis ke mail-log | Set `MAIL_MAILER=smtp` + `MAIL_*` (§5). Langsung aktif — tak perlu ubah kode. |
+| **OTP WhatsApp** (login HP) | `WA_PROVIDER=log` → tulis ke log | `WA_PROVIDER=fonnte` + `WA_TOKEN=...` (gateway ID), **atau** `WA_PROVIDER=cloud` + `WA_TOKEN` + `WA_PHONE_ID` (Meta Cloud API). **SMS tidak dipakai.** |
+| **Push / pengingat malam** | `PUSH_DRIVER=log` → tulis ke log | 1) `PUSH_DRIVER=fcm`; 2) unduh **service-account JSON** dari Firebase Console → taruh di server; 3) `FCM_CREDENTIALS=/path/ke/service-account.json`; 4) **aktifkan cron scheduler** (§10) agar `lentera:reminders` jalan tiap menit. iOS pakai token FCM juga (Firebase Messaging). |
+| **Refresh token** | ✅ aktif — `POST /auth/refresh` | Atur masa berlaku via `JWT_TTL` (menit, §5); refresh berlaku dalam `refresh_ttl` (default 2 minggu, `config/jwt.php`). |
+| **Hotline krisis** | "Segera hadir" (kosong) | Isi `config/lentera.php` → `hotlines` per wilayah **sebelum komunitas dibuka**. |
+| **Moderasi AI** | Stub heuristik | Isi `GEMINI_API_KEY` (§5). |
 
-> **Catatan keamanan:** selama OTP masih lewat log, kode verifikasi tersimpan di
-> `storage/logs/laravel.log`. Batasi akses file log, dan prioritaskan pasang
-> SMS/SMTP nyata sebelum rilis publik.
+**Env produksi tambahan** (lengkapi blok §5):
+```ini
+# WhatsApp OTP (pilih salah satu provider)
+WA_PROVIDER=fonnte           # atau: cloud
+WA_TOKEN=xxxxxxxx
+# WA_PHONE_ID=               # hanya untuk provider cloud (Meta)
+
+# Push (pengingat malam)
+PUSH_DRIVER=fcm
+FCM_CREDENTIALS=/var/www/lentera-api/storage/app/firebase-sa.json
+
+# Masa berlaku JWT (menit) — mobile disarankan panjang
+JWT_TTL=20160
+```
+
+> **File service-account FCM** taruh di luar web-root (mis. `storage/app/`),
+> permission `640`, milik `www-data`. Jangan commit ke git.
+
+> **Cron scheduler wajib** untuk pengingat: pastikan baris cron di §10 aktif —
+> tanpanya `lentera:reminders` tak pernah jalan.
+
+> **Catatan keamanan:** selama OTP masih ke log (WA/email belum dikonfigurasi),
+> kode verifikasi tersimpan di `storage/logs`. Batasi akses log & prioritaskan
+> pasang WA/SMTP sebelum rilis publik.
 
 > **Worker antrean wajib jalan** (§9): tanpa `queue:work`, kiriman komunitas
 > **berhenti di status `pending`** (tak pernah tayang) karena klasifikasi Lapis 2

@@ -14,6 +14,7 @@ Dua bidang data: **jurnal E2E** (`*_enc` = ciphertext base64 dari device, server
 | POST | `/auth/recovery` · `/auth/recovery/confirm` | — | pemulihan via email |
 | POST | `/auth/2fa/verify` | pending JWT | → token (admin: scope `mod`) |
 | POST | `/auth/2fa/setup` · `/enable` · `/disable` | JWT (admin) | TOTP |
+| POST | `/auth/refresh` | JWT (boleh kedaluwarsa) | token lama→baru (blacklist lama); token APP (mod hanya via 2FA) |
 | GET | `/me` | JWT | profil + providers + status sinkron |
 | POST | `/auth/logout` | JWT | cabut (blacklist) token |
 
