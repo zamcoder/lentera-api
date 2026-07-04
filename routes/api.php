@@ -75,6 +75,9 @@ Route::prefix('v1')->group(function () {
     // ---------- Mood, Statistik & Rekap (§6) — JWT ----------
     require __DIR__.'/api_stats.php';
 
+    // ---------- Pengaturan/Notifikasi (§12) + Keselamatan (§11) — JWT ----------
+    require __DIR__.'/api_settings.php';
+
     // ---------- Komunitas: Feed & Post (§7) — JWT ----------
     require __DIR__.'/api_community.php';
 

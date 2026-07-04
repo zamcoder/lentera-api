@@ -50,6 +50,10 @@ class User extends Authenticatable implements JWTSubject
         'role',
         'status',
         'sync_on',
+        'reminder_on',
+        'reminder_at',
+        'accent',
+        'theme',
     ];
 
     protected $hidden = [
@@ -64,6 +68,7 @@ class User extends Authenticatable implements JWTSubject
         return [
             'totp_enabled' => 'boolean',
             'sync_on' => 'boolean',
+            'reminder_on' => 'boolean',
             'kdf_salt' => \App\Casts\Bytea::class,
             'totp_secret_enc' => \App\Casts\Bytea::class,
             'created_at' => 'datetime',

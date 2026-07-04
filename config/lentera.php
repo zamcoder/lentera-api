@@ -65,6 +65,14 @@ return [
         'capek hidup', 'lelah hidup', 'putus asa', 'hampa sekali',
     ],
 
+    /*
+    | Hotline krisis per wilayah (§11). Kosong dulu → "Segera hadir".
+    | Wajib diisi sebelum komunitas dibuka (§11 keputusan tercatat).
+    */
+    'hotlines' => [
+        // 'ID' => [['label' => 'Into The Light ID', 'contact' => '...']],
+    ],
+
     // Sumber bantuan yang ditawarkan saat penanganan khusus (§10: hotline menyusul).
     'safe_space' => [
         'title' => 'Kamu tidak sendirian',
