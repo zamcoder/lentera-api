@@ -8,6 +8,7 @@ import Queue from './screens/Queue';
 import Reports from './screens/Reports';
 import Terms from './screens/Terms';
 import Accounts from './screens/Accounts';
+import Subscribers from './screens/Subscribers';
 
 export default function App() {
   const { ready, isModerator } = useAuth();
@@ -38,6 +39,7 @@ export default function App() {
         <Route path="/laporan" element={<Reports />} />
         <Route path="/kata-terlarang" element={<Terms />} />
         <Route path="/akun" element={<Accounts />} />
+        <Route path="/pendaftar" element={<Subscribers />} />
         <Route path="*" element={<Navigate to="/ringkasan" replace />} />
       </Route>
     </Routes>

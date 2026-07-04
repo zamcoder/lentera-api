@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\SubscriberController;
 use App\Http\Controllers\Api\V1\Community\ModerationController;
 use App\Http\Controllers\Api\V1\Community\ReportController;
 use App\Http\Controllers\Console\AccountsController;
@@ -45,4 +46,7 @@ Route::middleware(['auth:api', 'moderator'])
 
         // Metrik kesehatan komunitas (§B2).
         Route::get('/metrics', [MetricsController::class, 'index']);
+
+        // Pendaftar waitlist landing page.
+        Route::get('/subscribers', [SubscriberController::class, 'index']);
     });

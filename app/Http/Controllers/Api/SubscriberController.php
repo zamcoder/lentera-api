@@ -28,16 +28,23 @@ class SubscriberController extends Controller
         return response()->json(['ok' => true], 201);
     }
 
-    /** GET /api/subscribers — daftar waitlist (admin saja). */
+    /**
+     * GET /api/v1/mod/subscribers — daftar waitlist (konsol admin, di balik
+     * middleware moderator). Dukung pencarian `?q=`.
+     */
     public function index(Request $request): JsonResponse
     {
-        $user = $request->user();
-        if (! $user || $user->role !== 'admin') {
-            return response()->json(['message' => 'Tidak diizinkan.'], 403);
-        }
+        $q = trim((string) $request->query('q', ''));
 
-        return response()->json(
-            Subscriber::orderByDesc('created_at')->paginate(50)
-        );
+        $rows = Subscriber::query()
+            ->when($q !== '', fn ($query) => $query->where('email', 'ilike', "%{$q}%"))
+            ->orderByDesc('created_at')
+            ->limit(5000)
+            ->get(['id', 'email', 'source', 'ip', 'created_at']);
+
+        return response()->json([
+            'data' => $rows,
+            'total' => Subscriber::count(),
+        ]);
     }
 }

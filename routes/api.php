@@ -18,9 +18,9 @@ use Illuminate\Support\Facades\Route;
 | Referensi kebenaran: API_REQUIREMENTS.md, lib/data/models.dart.
 */
 
-// ---------- Waitlist landing page (temanlentera.id) — di /api (bukan v1) ----------
+// ---------- Waitlist landing page (temanlentera.id) — publik, di /api (bukan v1) ----------
+// Daftar pendaftar (admin) ada di /api/v1/mod/subscribers (lihat api_moderation.php).
 Route::post('/subscribe', [SubscriberController::class, 'store'])->middleware('throttle:10,1');
-Route::get('/subscribers', [SubscriberController::class, 'index'])->middleware('auth:api');
 
 Route::prefix('v1')->group(function () {
 

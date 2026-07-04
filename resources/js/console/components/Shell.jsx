@@ -10,6 +10,7 @@ const NAV = [
   { to: '/laporan', label: 'Laporan', icon: Icon.flag, badge: 'reports', kind: 'clay' },
   { to: '/kata-terlarang', label: 'Kata terlarang', icon: Icon.terms },
   { to: '/akun', label: 'Akun', icon: Icon.users },
+  { to: '/pendaftar', label: 'Pendaftar', icon: Icon.mail },
 ];
 
 const TITLES = {
@@ -18,6 +19,7 @@ const TITLES = {
   '/laporan': { t: 'Laporan pengguna', s: 'Konten yang dilaporkan anggota' },
   '/kata-terlarang': { t: 'Kata terlarang', s: 'Filter lapis pertama' },
   '/akun': { t: 'Tindakan akun', s: 'Kelola anggota komunitas' },
+  '/pendaftar': { t: 'Pendaftar waitlist', s: 'Email dari landing page temanlentera.id' },
 };
 
 export default function Shell() {
