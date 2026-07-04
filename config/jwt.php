@@ -101,7 +101,9 @@ return [
     |
     */
 
-    'ttl' => env('JWT_TTL', 60),
+    // Cast ke int: env() selalu mengembalikan string, dan Carbon 3 menolak
+    // string pada addMinutes() (rawAddUnit TypeError). null = token abadi.
+    'ttl' => is_null(env('JWT_TTL', 60)) ? null : (int) env('JWT_TTL', 60),
 
     /*
     |--------------------------------------------------------------------------
@@ -120,7 +122,7 @@ return [
     |
     */
 
-    'refresh_ttl' => env('JWT_REFRESH_TTL', 20160),
+    'refresh_ttl' => is_null(env('JWT_REFRESH_TTL', 20160)) ? null : (int) env('JWT_REFRESH_TTL', 20160),
 
     /*
     |--------------------------------------------------------------------------
