@@ -10,3 +10,8 @@ use Illuminate\Support\Facades\Schedule;
 Schedule::command('lentera:reminders')
     ->everyMinute()
     ->withoutOverlapping();
+
+// Telescope: buang entri lebih tua dari 3 hari (jalan harian → jendela bergulir 72 jam).
+Schedule::command('telescope:prune --hours=72')
+    ->daily()
+    ->withoutOverlapping();
