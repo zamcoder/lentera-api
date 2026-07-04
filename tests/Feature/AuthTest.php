@@ -107,4 +107,19 @@ class AuthTest extends TestCase
     {
         $this->getJson('/api/v1/health')->assertOk()->assertJsonPath('status', 'ok');
     }
+
+    public function test_refresh_issues_new_token_and_blacklists_old(): void
+    {
+        $user = User::factory()->create();
+        $old = \App\Support\JwtTokens::forApp($user);
+
+        $new = $this->withJwt($old)->postJson('/api/v1/auth/refresh')
+            ->assertOk()->assertJsonStructure(['token', 'user'])->json('token');
+
+        // Token baru berfungsi.
+        $this->withJwt($new)->getJson('/api/v1/me')->assertOk()->assertJsonPath('user.id', $user->id);
+
+        // Token lama sudah di-blacklist.
+        $this->withJwt($old)->getJson('/api/v1/me')->assertUnauthorized();
+    }
 }

@@ -47,6 +47,8 @@ Route::prefix('v1')->group(function () {
             Route::post('/otp/verify', [OtpController::class, 'verify']);
             Route::post('/recovery', [RecoveryController::class, 'request']);
             Route::post('/recovery/confirm', [RecoveryController::class, 'confirm']);
+            // Refresh: token dibaca dari header (boleh kedaluwarsa, dalam refresh_ttl).
+            Route::post('/refresh', [AuthController::class, 'refresh']);
         });
 
         // Verifikasi 2FA: butuh token JWT (pending untuk admin, atau token user ber-2FA).

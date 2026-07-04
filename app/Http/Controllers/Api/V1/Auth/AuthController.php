@@ -14,6 +14,7 @@ use App\Support\Pseudonym;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -96,5 +97,27 @@ class AuthController extends Controller
         auth('api')->logout();
 
         return response()->json(['message' => 'Sampai jumpa.']);
+    }
+
+    /**
+     * POST /api/v1/auth/refresh — tukar token (yang masih dalam jendela
+     * refresh_ttl, boleh sudah kedaluwarsa) dengan token app baru. Token lama
+     * di-blacklist.
+     *
+     * Catatan keamanan: refresh menghasilkan token APP (tanpa klaim `mod`) —
+     * scope konsol hanya bisa diperoleh lewat verifikasi 2FA, tak bisa via refresh.
+     */
+    public function refresh(): JsonResponse
+    {
+        try {
+            $newToken = JWTAuth::parseToken()->refresh();          // blacklist lama, terbitkan baru
+            $user = JWTAuth::setToken($newToken)->authenticate();
+        } catch (\Tymon\JWTAuth\Exceptions\JWTException $e) {
+            throw ValidationException::withMessages([
+                'token' => ['Token tidak dapat diperbarui, silakan login ulang.'],
+            ]);
+        }
+
+        return $this->tokenResponse($user, $newToken);
     }
 }

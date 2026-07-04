@@ -24,6 +24,15 @@ abstract class TestCase extends BaseTestCase
         }
     }
 
+    /** Set header Authorization dengan token JWT mentah (reset guard dulu). */
+    protected function withJwt(string $token): static
+    {
+        $this->resetAuthState();
+        $this->withToken($token);
+
+        return $this;
+    }
+
     /** Set header Authorization dengan JWT app untuk $user. */
     protected function actingAsJwt(User $user): static
     {
