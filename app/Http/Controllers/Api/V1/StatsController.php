@@ -66,6 +66,31 @@ class StatsController extends Controller
         ]);
     }
 
+    /**
+     * GET /api/v1/stats/mood?month=YYYY-MM — mood harian 1 bulan penuh untuk
+     * kalender "memori". Default bulan berjalan.
+     */
+    public function moodMonth(Request $request): JsonResponse
+    {
+        $month = $request->string('month')->toString() ?: today()->format('Y-m');
+        abort_unless(preg_match('/^\d{4}-\d{2}$/', $month), 422, 'Format bulan harus YYYY-MM.');
+
+        $start = Carbon::createFromFormat('Y-m-d', $month.'-01')->startOfDay();
+        $end = $start->copy()->endOfMonth();
+
+        $rows = Mood::where('user_id', auth('api')->id())
+            ->whereBetween('mood_date', [$start->format('Y-m-d'), $end->format('Y-m-d')])
+            ->orderBy('mood_date')
+            ->get(['mood_date', 'mood_index']);
+
+        return response()->json([
+            'data' => $rows->map(fn (Mood $m) => [
+                'date' => $m->mood_date->format('Y-m-d'),
+                'mood_index' => $m->mood_index,
+            ]),
+        ]);
+    }
+
     /** GET /api/v1/today — rekap Hari Ini + energi sosial. */
     public function today(): JsonResponse
     {

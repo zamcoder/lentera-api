@@ -45,8 +45,12 @@ Field: `name_enc/name_nonce`, `rel_enc/rel_nonce`, `recall_enc/recall_nonce` (ba
 | Method | Path | Catatan |
 |---|---|---|
 | GET | `/stats/summary?range=week\|month` | `week[], distribution, streak, recap` |
+| GET | `/stats/mood?month=YYYY-MM` | kalender mood 1 bulan → `{data:[{date, mood_index}]}` |
 | POST | `/mood` | `{mood_index 0-4, date?}` (upsert harian) |
 | GET | `/today` | mood + counts + `social_energy{filled,drained}` |
+| PUT | `/reflections/{date}` | **E2E** upsert "Tiga baris malam": `{grateful_enc/nonce, drained_enc/nonce, tomorrow_enc/nonce}` (semua opsional) → `{date, ...fields}` |
+| GET | `/reflections/{date}` | refleksi 1 hari (field `null` bila kosong) |
+| GET | `/reflections?from=&to=` | riwayat kalender → `{data:[...]}` |
 
 ## Komunitas — Feed & Post (§7)
 | Method | Path | Catatan |
