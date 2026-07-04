@@ -121,6 +121,10 @@ agent **membaca file konteks** (bukan menebak).
 - **Status moderasi**: `pending|approved|held|rejected`. `held` + `self_harm`
   → jangan tampilkan sebagai penolakan; arahkan ke Ruang Tenang.
 - **OTP**: login HP dikirim via **WhatsApp**, pemulihan via **email** (tak ada SMS).
+- **Google Sign-In**: kirim **`id_token`** dari Google ke `POST /auth/oauth`
+  `{provider:"google", id_token}` (bukan `sub`). Backend memverifikasi token &
+  mencocokkan `aud`. Di Flutter, set **`serverClientId`** = Web OAuth client ID
+  yang dipakai backend agar `aud` token cocok.
 
 ## Penutup
 > Rapikan: state management (Riverpod/Bloc) untuk token & data, loading/empty/error

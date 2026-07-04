@@ -11,7 +11,7 @@ Dua bidang data: **jurnal E2E** (`*_enc` = ciphertext base64 dari device, server
 |---|---|---|---|
 | POST | `/auth/register` | — | email+password (+`kdf_salt`) → JWT |
 | POST | `/auth/login` | — | → JWT; admin ber-2FA → `{two_factor_required, pending_token}` |
-| POST | `/auth/oauth` | — | `{provider, sub, email?}` → JWT |
+| POST | `/auth/oauth` | — | `{provider:"google", id_token}` → JWT (server **verifikasi** ID token: aud+issuer) |
 | POST | `/auth/otp/request` · `/auth/otp/verify` | — | login HP → JWT |
 | POST | `/auth/recovery` · `/auth/recovery/confirm` | — | pemulihan via email |
 | POST | `/auth/2fa/verify` | pending JWT | → token (admin: scope `mod`) |

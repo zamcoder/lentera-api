@@ -7,28 +7,40 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\OAuthRequest;
 use App\Models\AuthIdentity;
 use App\Models\User;
+use App\Services\Auth\GoogleTokenVerifier;
 use App\Support\JwtTokens;
 use App\Support\Pseudonym;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 
 /**
- * OAuthController (v1) — masuk via Google / Apple (§1 metode C & D).
+ * OAuthController (v1) — masuk via Google (§1 metode C).
  *
- * CATATAN: verifikasi id_token ke penyedia (JWKS) belum terpasang; di lokal
- * `sub` diterima apa adanya. Di produksi WAJIB verifikasi signature dulu.
+ * ID token dari client DIVERIFIKASI ke penyedia (signature + aud) sebelum
+ * dipercaya. `sub`/`email` diambil dari token terverifikasi, bukan dari body
+ * mentah — mencegah pemalsuan identitas. Apple menyusul (verifier terpisah).
  */
 class OAuthController extends Controller
 {
     use AuthResponses;
 
-    public function callback(OAuthRequest $request): JsonResponse
+    public function callback(OAuthRequest $request, GoogleTokenVerifier $google): JsonResponse
     {
         $data = $request->validated();
 
-        $user = DB::transaction(function () use ($data) {
-            $identity = AuthIdentity::where('provider', $data['provider'])
-                ->where('identifier', $data['sub'])
+        if ($data['provider'] !== 'google') {
+            return response()->json(['message' => 'Provider ini belum didukung.'], 422);
+        }
+
+        try {
+            $claims = $google->verify($data['id_token']);
+        } catch (\Throwable $e) {
+            return response()->json(['message' => 'Verifikasi Google gagal: '.$e->getMessage()], 401);
+        }
+
+        $user = DB::transaction(function () use ($claims) {
+            $identity = AuthIdentity::where('provider', 'google')
+                ->where('identifier', $claims['sub'])
                 ->first();
 
             if ($identity) {
@@ -37,15 +49,15 @@ class OAuthController extends Controller
 
             $user = User::create([
                 'handle' => Pseudonym::unique(),
-                'email' => $data['email'] ?? null,
+                'email' => $claims['email'] ?? null,
                 'role' => 'user',
                 'status' => 'active',
             ]);
 
             AuthIdentity::create([
                 'user_id' => $user->id,
-                'provider' => $data['provider'],
-                'identifier' => $data['sub'],
+                'provider' => 'google',
+                'identifier' => $claims['sub'],
                 'verified_at' => now(),
             ]);
 

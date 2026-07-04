@@ -35,4 +35,11 @@ return [
         ],
     ],
 
+    // Sign in with Google (§1 metode C). client_ids = daftar OAuth client ID
+    // yang boleh menjadi `aud` pada ID token (Web/serverClientId, Android, iOS),
+    // dipisah koma. Backend memverifikasi ID token & mencocokkan aud ke daftar ini.
+    'google' => [
+        'client_ids' => env('GOOGLE_CLIENT_IDS', ''),
+    ],
+
 ];

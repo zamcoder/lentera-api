@@ -15,8 +15,8 @@ class OAuthRequest extends FormRequest
     {
         return [
             'provider' => ['required', 'in:google,apple'],
-            'sub' => ['required', 'string', 'max:255'],   // subject unik dari penyedia
-            'email' => ['nullable', 'email'],
+            // ID token dari penyedia — WAJIB diverifikasi server (bukan sub mentah).
+            'id_token' => ['required', 'string'],
         ];
     }
 }
