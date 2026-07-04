@@ -70,7 +70,7 @@ export default function Login() {
     setBusy(true);
     try {
       const res = await api.post('/auth/2fa/verify', { code: finalCode }, { token: pendingToken });
-      const { user } = await api.get('/auth/me', { token: res.token });
+      const { user } = await api.get('/me', { token: res.token });
       establish(res.token, user);
       toast('Selamat datang kembali 🌿');
     } catch (e) {
@@ -85,7 +85,7 @@ export default function Login() {
     setBusy(true);
     try {
       const res = await api.post('/auth/2fa/enable', { code: finalCode }, { token: setupToken });
-      const { user } = await api.get('/auth/me', { token: res.token });
+      const { user } = await api.get('/me', { token: res.token });
       establish(res.token, user);
       toast('2FA aktif — selamat datang 🌿');
     } catch (e) {

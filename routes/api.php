@@ -1,57 +1,86 @@
 <?php
 
-use App\Http\Controllers\Auth\AuthController;
-use App\Http\Controllers\Auth\OAuthController;
-use App\Http\Controllers\Auth\OtpController;
-use App\Http\Controllers\Auth\RecoveryController;
-use App\Http\Controllers\Auth\TwoFactorController;
-use App\Support\TokenAbilities;
+use App\Http\Controllers\Api\V1\Auth\AuthController;
+use App\Http\Controllers\Api\V1\Auth\OAuthController;
+use App\Http\Controllers\Api\V1\Auth\OtpController;
+use App\Http\Controllers\Api\V1\Auth\RecoveryController;
+use App\Http\Controllers\Api\V1\Auth\TwoFactorController;
+use App\Http\Controllers\Api\V1\MeController;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
-| API Lentera
+| API Lentera — semua di /api/v1 (JSON, error {message, errors})
 |--------------------------------------------------------------------------
-| Grup: Auth (/auth/*) · Sync (/vault/*) · Community · Moderation (/mod/*)
-| Referensi: Rencana Produk §08, Handoff Doc §6.
+| Auth JWT (tymon/jwt-auth). Domain jurnal E2E & komunitas menyusul per fase.
+| Referensi kebenaran: API_REQUIREMENTS.md, lib/data/models.dart.
 */
 
-// ===================== AUTH (§A2) =====================
-Route::prefix('auth')->group(function () {
-    // Publik + rate limit ketat (anti brute-force).
-    Route::middleware('throttle:10,1')->group(function () {
-        Route::post('/register', [AuthController::class, 'register']);
-        Route::post('/login', [AuthController::class, 'login']);
-        Route::post('/otp/request', [OtpController::class, 'request']);
-        Route::post('/otp/verify', [OtpController::class, 'verify']);
-        Route::post('/oauth', [OAuthController::class, 'callback']);
-        Route::post('/recover', [RecoveryController::class, 'request']);
-        Route::post('/recover/confirm', [RecoveryController::class, 'confirm']);
+Route::prefix('v1')->group(function () {
+
+    // ---------- Health (kickoff) ----------
+    Route::get('/health', function () {
+        $db = 'ok';
+        try {
+            DB::connection()->getPdo();
+        } catch (\Throwable) {
+            $db = 'down';
+        }
+
+        return response()->json([
+            'status' => 'ok',
+            'app' => config('app.name'),
+            'db' => $db,
+            'time' => now()->toIso8601String(),
+        ]);
     });
 
-    // Verifikasi 2FA: butuh token "pending" (ability 2fa:pending).
-    Route::post('/2fa/verify', [TwoFactorController::class, 'verify'])
-        ->middleware(['auth:sanctum', 'abilities:'.TokenAbilities::TWO_FA_PENDING]);
+    // ---------- Auth & Akun (§1) ----------
+    Route::prefix('auth')->group(function () {
+        // Publik + rate limit (anti brute-force).
+        Route::middleware('throttle:10,1')->group(function () {
+            Route::post('/register', [AuthController::class, 'register']);
+            Route::post('/login', [AuthController::class, 'login']);
+            Route::post('/oauth', [OAuthController::class, 'callback']);
+            Route::post('/otp/request', [OtpController::class, 'request']);
+            Route::post('/otp/verify', [OtpController::class, 'verify']);
+            Route::post('/recovery', [RecoveryController::class, 'request']);
+            Route::post('/recovery/confirm', [RecoveryController::class, 'confirm']);
+        });
 
-    // Sesudah login (token app apa pun).
-    Route::middleware('auth:sanctum')->group(function () {
-        Route::get('/me', [AuthController::class, 'me']);
-        Route::post('/logout', [AuthController::class, 'logout']);
-        Route::post('/2fa/setup', [TwoFactorController::class, 'setup']);
-        Route::post('/2fa/enable', [TwoFactorController::class, 'enable']);
-        Route::post('/2fa/disable', [TwoFactorController::class, 'disable']);
+        // Verifikasi 2FA: butuh token JWT (pending untuk admin, atau token user ber-2FA).
+        Route::post('/2fa/verify', [TwoFactorController::class, 'verify'])->middleware('auth:api');
+
+        // Sesudah login (token app apa pun).
+        Route::middleware('auth:api')->group(function () {
+            Route::post('/logout', [AuthController::class, 'logout']);
+            Route::post('/2fa/setup', [TwoFactorController::class, 'setup']);
+            Route::post('/2fa/enable', [TwoFactorController::class, 'enable']);
+            Route::post('/2fa/disable', [TwoFactorController::class, 'disable']);
+        });
     });
+
+    Route::get('/me', [MeController::class, 'show'])->middleware('auth:api');
+
+    // ---------- Sync / Vault (§2) — JWT ----------
+    require __DIR__.'/api_vault.php';
+
+    // ---------- Orang / People (§3) — JWT, E2E ----------
+    require __DIR__.'/api_people.php';
+
+    // ---------- Momen/Interaksi (§4) + Media (§5) — JWT, E2E ----------
+    require __DIR__.'/api_interactions.php';
+
+    // ---------- Mood, Statistik & Rekap (§6) — JWT ----------
+    require __DIR__.'/api_stats.php';
+
+    // ---------- Moderasi & konsol (§10 / §A5-A6) — JWT ----------
+    require __DIR__.'/api_moderation.php';
 });
 
-// ===================== SYNC / VAULT (§A3) =====================
-// (didefinisikan di bagian Sync)
-
-// ===================== COMMUNITY (§A4) =====================
-// (didefinisikan di bagian Community)
-
-// ===================== MODERATION (§A5/§A6) =====================
-// (didefinisikan di bagian Moderation)
-
-require __DIR__.'/api_vault.php';
+/*
+| Domain berikut MASIH memakai Sanctum di /api (belum dimigrasikan ke v1/JWT).
+| Akan dipindah ke /api/v1 + JWT pada fase domainnya: Community (Fase 2).
+*/
 require __DIR__.'/api_community.php';
-require __DIR__.'/api_moderation.php';

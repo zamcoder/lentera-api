@@ -5,16 +5,14 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * vault_backups — cadangan jurnal pribadi (§05 Bidang A, opsional).
+ * vault_backups — cadangan jurnal pribadi terenkripsi (§2 API_REQUIREMENTS).
  *
  * KENAPA BYTEA: isinya ciphertext AES-256-GCM yang dienkripsi di device.
  * Server menyimpan blob mentah "buta" — tak punya kunci, tak bisa & tak boleh
  * mendekripsi. bytea menyimpan byte biner apa adanya tanpa asumsi encoding
  * (berbeda dari TEXT yang mengharuskan UTF-8 valid) — cocok untuk ciphertext.
  *
- * key_escrow: titipan kunci pemulihan (§05 trade-off). NULL = mode
- * "tanpa pemulihan, lebih privat"; terisi = pengguna memilih pemulihan
- * dibantu server. Tetap terenkripsi terhadap wrapping-key sisi server.
+ * Satu blob per user (versi di-bump tiap perubahan), sesuai API §2.
  */
 return new class extends Migration
 {
@@ -23,9 +21,8 @@ return new class extends Migration
         Schema::create('vault_backups', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->uuid('user_id');
-            $table->binary('blob');                    // BYTEA — ciphertext jurnal
-            $table->binary('key_escrow')->nullable();  // BYTEA — kunci pemulihan (opsional)
-            $table->boolean('escrow_enabled')->default(false);
+            $table->binary('ciphertext');              // BYTEA — ciphertext jurnal
+            $table->unsignedInteger('version')->default(1); // bump tiap ubah
             $table->unsignedBigInteger('size_bytes')->default(0);
             $table->string('checksum')->nullable();    // integritas (mis. sha256 hex)
             $table->timestampTz('created_at')->useCurrent();

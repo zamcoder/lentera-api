@@ -7,80 +7,90 @@ use App\Models\VaultBackup;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
+/**
+ * Vault sync E2E (§2) — JWT di /api/v1. Server hanya menyimpan ciphertext.
+ */
 class VaultTest extends TestCase
 {
     use RefreshDatabase;
 
-    private function actingUser(): User
-    {
-        $user = User::factory()->create();
-        $this->actingAs($user, 'sanctum');
-
-        return $user;
-    }
-
     public function test_backup_stores_ciphertext_verbatim(): void
     {
-        $user = $this->actingUser();
-        // Anggap ini ciphertext AES-256-GCM dari device (byte biner acak).
-        $ciphertext = random_bytes(512);
-        $b64 = base64_encode($ciphertext);
+        $user = User::factory()->create();
+        $ciphertext = random_bytes(512);           // anggap AES-256-GCM dari device
 
-        $this->putJson('/api/vault/backup', ['blob' => $b64])
+        $this->actingAsJwt($user)
+            ->putJson('/api/v1/vault/backup', ['ciphertext' => base64_encode($ciphertext), 'version' => 1])
             ->assertOk()
-            ->assertJsonPath('backup.size_bytes', 512);
+            ->assertJsonPath('size_bytes', 512)
+            ->assertJsonPath('version', 1);
 
         // Server menyimpan byte identik, tak menyentuh isi.
-        $stored = VaultBackup::where('user_id', $user->id)->first();
-        $this->assertSame($ciphertext, $stored->blob);
+        $this->assertSame($ciphertext, VaultBackup::where('user_id', $user->id)->first()->ciphertext);
     }
 
     public function test_restore_round_trips_ciphertext(): void
     {
-        $this->actingUser();
+        $user = User::factory()->create();
         $ciphertext = random_bytes(256);
         $b64 = base64_encode($ciphertext);
 
-        $this->putJson('/api/vault/backup', ['blob' => $b64])->assertOk();
+        $this->actingAsJwt($user)->putJson('/api/v1/vault/backup', ['ciphertext' => $b64])->assertOk();
 
-        $res = $this->getJson('/api/vault/restore')->assertOk();
-        $this->assertSame($b64, $res->json('blob'));
-        // Byte yang dikembalikan identik dengan yang dikirim device.
-        $this->assertSame($ciphertext, base64_decode($res->json('blob')));
+        $res = $this->actingAsJwt($user)->getJson('/api/v1/vault/restore')->assertOk();
+        $this->assertSame($b64, $res->json('ciphertext'));
+        $this->assertSame($ciphertext, base64_decode($res->json('ciphertext')));
     }
 
-    public function test_escrow_requires_key(): void
+    public function test_status_reports_sync_state(): void
     {
-        $this->actingUser();
+        $user = User::factory()->create();
 
-        $this->putJson('/api/vault/backup', [
-            'blob' => base64_encode('x'),
-            'escrow_enabled' => true,
-        ])->assertStatus(422);
+        $this->actingAsJwt($user)->getJson('/api/v1/vault/status')
+            ->assertOk()
+            ->assertJsonPath('has_backup', false)
+            ->assertJsonPath('sync_on', true);
+
+        $this->actingAsJwt($user)->putJson('/api/v1/vault/backup', ['ciphertext' => base64_encode(random_bytes(32))])->assertOk();
+
+        $this->actingAsJwt($user)->getJson('/api/v1/vault/status')
+            ->assertOk()
+            ->assertJsonPath('has_backup', true)
+            ->assertJsonPath('synced', true)
+            ->assertJsonPath('version', 1);
     }
 
-    public function test_no_response_field_exposes_plaintext(): void
+    public function test_version_bumps_on_each_backup(): void
     {
-        $this->actingUser();
-        // Ciphertext yang, jika didekripsi, akan mengandung kata ini — server
-        // tak punya kunci, jadi kata ini TIDAK boleh muncul di respons mana pun.
-        $ciphertext = random_bytes(64);
+        $user = User::factory()->create();
 
-        $this->putJson('/api/vault/backup', ['blob' => base64_encode($ciphertext)])->assertOk();
-        $restore = $this->getJson('/api/vault/restore')->assertOk();
+        $this->actingAsJwt($user)->putJson('/api/v1/vault/backup', ['ciphertext' => base64_encode(random_bytes(16))])
+            ->assertJsonPath('version', 1);
+        $this->actingAsJwt($user)->putJson('/api/v1/vault/backup', ['ciphertext' => base64_encode(random_bytes(16))])
+            ->assertJsonPath('version', 2);
+    }
 
-        // Respons hanya mengandung base64 opak + metadata; tak ada dekripsi.
-        $this->assertSame(base64_encode($ciphertext), $restore->json('blob'));
+    public function test_sync_toggle(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAsJwt($user)->putJson('/api/v1/settings/sync', ['enabled' => false])
+            ->assertOk()->assertJsonPath('sync_on', false);
+
+        $this->actingAsJwt($user)->getJson('/api/v1/vault/status')->assertJsonPath('sync_on', false);
     }
 
     public function test_users_cannot_read_each_others_vault(): void
     {
         $a = User::factory()->create();
-        $this->actingAs($a, 'sanctum');
-        $this->putJson('/api/vault/backup', ['blob' => base64_encode(random_bytes(32))])->assertOk();
+        $this->actingAsJwt($a)->putJson('/api/v1/vault/backup', ['ciphertext' => base64_encode(random_bytes(32))])->assertOk();
 
         $b = User::factory()->create();
-        $this->actingAs($b, 'sanctum');
-        $this->getJson('/api/vault/restore')->assertNotFound();
+        $this->actingAsJwt($b)->getJson('/api/v1/vault/restore')->assertNotFound();
+    }
+
+    public function test_requires_auth(): void
+    {
+        $this->getJson('/api/v1/vault/status')->assertUnauthorized();
     }
 }

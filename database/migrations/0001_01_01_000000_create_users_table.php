@@ -44,6 +44,9 @@ return new class extends Migration
             $table->string('role')->default('user');         // user | admin
             $table->string('status')->default('active');     // active | muted | limited | blocked
 
+            // Sinkron awan (§2 /settings/sync). Setting lain menyusul di Fase 3.
+            $table->boolean('sync_on')->default(true);
+
             $table->rememberToken();
             $table->timestampTz('created_at')->useCurrent();
             $table->timestampTz('updated_at')->nullable();

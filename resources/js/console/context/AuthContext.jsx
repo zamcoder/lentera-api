@@ -18,7 +18,7 @@ export function AuthProvider({ children }) {
         return;
       }
       try {
-        const { user } = await api.get('/auth/me');
+        const { user } = await api.get('/me');
         if (alive) setUser(user);
       } catch {
         setToken(null); // token kedaluwarsa/cabut

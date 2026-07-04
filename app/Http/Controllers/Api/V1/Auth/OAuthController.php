@@ -1,32 +1,30 @@
 <?php
 
-namespace App\Http\Controllers\Auth;
+namespace App\Http\Controllers\Api\V1\Auth;
 
+use App\Http\Controllers\Api\V1\Concerns\AuthResponses;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Auth\OAuthRequest;
 use App\Models\AuthIdentity;
 use App\Models\User;
+use App\Support\JwtTokens;
 use App\Support\Pseudonym;
-use App\Support\TokenAbilities;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 /**
- * OAuthController — masuk via Google / Apple (§A2 metode C & D).
+ * OAuthController (v1) — masuk via Google / Apple (§1 metode C & D).
  *
- * CATATAN INTEGRASI: verifikasi id_token ke penyedia (JWKS Google / Apple)
- * belum terpasang. Di lokal, `sub` (subject) diterima apa adanya untuk
- * pengembangan. Di produksi WAJIB memverifikasi signature id_token dulu.
+ * CATATAN: verifikasi id_token ke penyedia (JWKS) belum terpasang; di lokal
+ * `sub` diterima apa adanya. Di produksi WAJIB verifikasi signature dulu.
  */
 class OAuthController extends Controller
 {
-    public function callback(Request $request): JsonResponse
+    use AuthResponses;
+
+    public function callback(OAuthRequest $request): JsonResponse
     {
-        $data = $request->validate([
-            'provider' => ['required', 'in:google,apple'],
-            'sub' => ['required', 'string', 'max:255'],   // subject unik dari penyedia
-            'email' => ['nullable', 'email'],
-        ]);
+        $data = $request->validated();
 
         $user = DB::transaction(function () use ($data) {
             $identity = AuthIdentity::where('provider', $data['provider'])
@@ -54,14 +52,6 @@ class OAuthController extends Controller
             return $user;
         });
 
-        return response()->json([
-            'token' => $user->createToken('app', [TokenAbilities::APP])->plainTextToken,
-            'user' => [
-                'id' => $user->id,
-                'handle' => $user->handle,
-                'role' => $user->role,
-                'status' => $user->status,
-            ],
-        ]);
+        return $this->tokenResponse($user, JwtTokens::forApp($user));
     }
 }

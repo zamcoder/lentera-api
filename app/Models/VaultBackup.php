@@ -8,8 +8,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * VaultBackup — cadangan jurnal terenkripsi (ciphertext). Server buta.
- * `blob` & `key_escrow` disembunyikan dari serialisasi JSON default agar
- * ciphertext tak sengaja ikut terkirim di respons yang tak seharusnya.
+ * `ciphertext` disembunyikan dari serialisasi JSON default agar tak sengaja
+ * ikut terkirim di respons yang tak seharusnya.
  */
 class VaultBackup extends Model
 {
@@ -22,17 +22,16 @@ class VaultBackup extends Model
     const UPDATED_AT = 'updated_at';
 
     protected $fillable = [
-        'user_id', 'blob', 'key_escrow', 'escrow_enabled', 'size_bytes', 'checksum',
+        'user_id', 'ciphertext', 'version', 'size_bytes', 'checksum',
     ];
 
-    protected $hidden = ['blob', 'key_escrow'];
+    protected $hidden = ['ciphertext'];
 
     protected function casts(): array
     {
         return [
-            'blob' => \App\Casts\Bytea::class,
-            'key_escrow' => \App\Casts\Bytea::class,
-            'escrow_enabled' => 'boolean',
+            'ciphertext' => \App\Casts\Bytea::class,
+            'version' => 'integer',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];

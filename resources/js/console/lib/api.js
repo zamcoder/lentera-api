@@ -1,6 +1,6 @@
-// Klien REST untuk API Lentera. Token Bearer disimpan di localStorage.
-// Default same-origin '/api' — konsol disajikan oleh Laravel yang sama.
-const BASE = import.meta.env.VITE_API_BASE || '/api';
+// Klien REST untuk API Lentera. Token Bearer (JWT) disimpan di localStorage.
+// Default same-origin '/api/v1' — konsol disajikan oleh Laravel yang sama.
+const BASE = import.meta.env.VITE_API_BASE || '/api/v1';
 const TOKEN_KEY = 'lentera_token';
 
 export function getToken() {

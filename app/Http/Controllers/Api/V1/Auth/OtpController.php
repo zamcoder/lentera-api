@@ -1,56 +1,49 @@
 <?php
 
-namespace App\Http\Controllers\Auth;
+namespace App\Http\Controllers\Api\V1\Auth;
 
+use App\Http\Controllers\Api\V1\Concerns\AuthResponses;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Auth\OtpRequest;
+use App\Http\Requests\Auth\OtpVerifyRequest;
 use App\Models\AuthIdentity;
 use App\Models\User;
 use App\Services\OtpService;
+use App\Support\JwtTokens;
 use App\Support\Pseudonym;
-use App\Support\TokenAbilities;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 /**
- * OtpController — masuk via nomor HP tanpa kata sandi (§A2 metode B).
- * Dua langkah: minta kode → verifikasi kode.
+ * OtpController (v1) — masuk via nomor HP tanpa sandi (§1 metode B).
  */
 class OtpController extends Controller
 {
+    use AuthResponses;
+
     public function __construct(private readonly OtpService $otp)
     {
     }
 
-    /** POST /auth/otp/request — kirim kode ke nomor HP. */
-    public function request(Request $request): JsonResponse
+    /** POST /api/v1/auth/otp/request — kirim kode ke nomor HP. */
+    public function request(OtpRequest $request): JsonResponse
     {
-        $data = $request->validate([
-            'phone' => ['required', 'string', 'regex:/^\+?[0-9]{8,15}$/'],
-        ]);
-
-        $code = $this->otp->issue($data['phone'], 'login_otp');
+        $code = $this->otp->issue($request->validated()['phone'], 'login_otp');
 
         return response()->json([
             'message' => 'Kode dikirim.',
-            // Hanya di lokal untuk memudahkan pengujian — jangan pernah di produksi.
             'dev_code' => app()->environment('local', 'testing') ? $code : null,
         ]);
     }
 
-    /** POST /auth/otp/verify — verifikasi kode → buat/masuk akun. */
-    public function verify(Request $request): JsonResponse
+    /** POST /api/v1/auth/otp/verify — verifikasi kode → buat/masuk akun. */
+    public function verify(OtpVerifyRequest $request): JsonResponse
     {
-        $data = $request->validate([
-            'phone' => ['required', 'string'],
-            'code' => ['required', 'string'],
-        ]);
+        $data = $request->validated();
 
         if (! $this->otp->verify($data['phone'], 'login_otp', $data['code'])) {
-            throw ValidationException::withMessages([
-                'code' => ['Kode salah atau kedaluwarsa.'],
-            ]);
+            throw ValidationException::withMessages(['code' => ['Kode salah atau kedaluwarsa.']]);
         }
 
         $user = DB::transaction(function () use ($data) {
@@ -78,16 +71,6 @@ class OtpController extends Controller
             return $user;
         });
 
-        $token = $user->createToken('app', [TokenAbilities::APP])->plainTextToken;
-
-        return response()->json([
-            'token' => $token,
-            'user' => [
-                'id' => $user->id,
-                'handle' => $user->handle,
-                'role' => $user->role,
-                'status' => $user->status,
-            ],
-        ]);
+        return $this->tokenResponse($user, JwtTokens::forApp($user));
     }
 }

@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Middleware\EnsureModerator;
+use App\Http\Middleware\EnsureModeratorJwt;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -17,11 +17,9 @@ return Application::configure(basePath: dirname(__DIR__))
         // Semua /api/* diperlakukan JSON → 401 tegas saat tak terautentikasi.
         $middleware->api(prepend: [\App\Http\Middleware\ForceJson::class]);
 
-        // Alias middleware Sanctum untuk cek ability token + gerbang moderator.
+        // Gerbang konsol admin (role + 2FA + scope mod pada JWT).
         $middleware->alias([
-            'abilities' => \Laravel\Sanctum\Http\Middleware\CheckAbilities::class,
-            'ability' => \Laravel\Sanctum\Http\Middleware\CheckForAnyAbility::class,
-            'moderator' => EnsureModerator::class,
+            'moderator' => EnsureModeratorJwt::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

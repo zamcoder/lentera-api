@@ -1,0 +1,147 @@
+<?php
+
+namespace App\Http\Controllers\Api\V1;
+
+use App\Http\Controllers\Controller;
+use App\Models\Interaction;
+use App\Models\Mood;
+use App\Models\Person;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
+
+/**
+ * StatsController (v1) — mood/statistik/rekap (§6). HANYA agregat non-sensitif
+ * (jumlah per hari, indeks mood, tanggal, person_id). Isi jurnal tetap
+ * terenkripsi — server tak pernah membacanya.
+ */
+class StatsController extends Controller
+{
+    // Inisial hari (Minggu..Sabtu) — selaras label WeekDay app.
+    private const DAY_INITIAL = ['M', 'S', 'S', 'R', 'K', 'J', 'S'];
+
+    /** GET /api/v1/stats/summary?range=week|month */
+    public function summary(Request $request): JsonResponse
+    {
+        $uid = auth('api')->id();
+        $days = $request->string('range')->toString() === 'month' ? 30 : 7;
+        $start = today()->subDays($days - 1);
+
+        // Hitungan per hari+type dalam rentang.
+        $byDay = [];
+        Interaction::where('user_id', $uid)
+            ->whereBetween('occurred_at', [$start->copy()->startOfDay(), now()->endOfDay()])
+            ->selectRaw('(occurred_at)::date as d, type, count(*) as c')
+            ->groupBy('d', 'type')
+            ->get()
+            ->each(function ($row) use (&$byDay) {
+                $byDay[(string) $row->d][(int) $row->type] = (int) $row->c;
+            });
+
+        $moods = Mood::where('user_id', $uid)
+            ->whereBetween('mood_date', [$start->toDateString(), today()->toDateString()])
+            ->get()
+            ->keyBy(fn ($m) => $m->mood_date->toDateString());
+
+        $series = [];
+        for ($i = 0; $i < $days; $i++) {
+            $date = $start->copy()->addDays($i);
+            $key = $date->toDateString();
+            $series[] = [
+                'date' => $key,
+                'label' => self::DAY_INITIAL[$date->dayOfWeek],
+                'pos' => $byDay[$key][Interaction::TYPE_POSITIVE] ?? 0,
+                'neg' => $byDay[$key][Interaction::TYPE_NEGATIVE] ?? 0,
+                'mood' => $moods->get($key)?->mood_index,
+            ];
+        }
+
+        return response()->json([
+            'range' => $days === 30 ? 'month' : 'week',
+            'week' => $series,                       // seri per hari (WeekDay)
+            'distribution' => $this->distribution($uid, $start),
+            'streak' => $this->streak($uid),
+            'recap' => $this->recap($uid),           // "Paling kamu syukuri"
+        ]);
+    }
+
+    /** GET /api/v1/today — rekap Hari Ini + energi sosial. */
+    public function today(): JsonResponse
+    {
+        $uid = auth('api')->id();
+        [$start, $end] = [today()->startOfDay(), today()->endOfDay()];
+
+        $counts = Interaction::where('user_id', $uid)
+            ->whereBetween('occurred_at', [$start, $end])
+            ->selectRaw('type, count(*) c')->groupBy('type')->pluck('c', 'type');
+
+        return response()->json([
+            'date' => today()->toDateString(),
+            'mood_index' => Mood::where('user_id', $uid)->where('mood_date', today()->toDateString())->value('mood_index'),
+            'counts' => [
+                'positive' => (int) ($counts[Interaction::TYPE_POSITIVE] ?? 0),
+                'negative' => (int) ($counts[Interaction::TYPE_NEGATIVE] ?? 0),
+                'neutral' => (int) ($counts[0] ?? 0),
+            ],
+            // Energi sosial: siapa mengisi (positif) vs menguras (negatif) hari ini.
+            'social_energy' => [
+                'filled' => $this->peopleTaggedToday($uid, Interaction::TYPE_POSITIVE, $start, $end),
+                'drained' => $this->peopleTaggedToday($uid, Interaction::TYPE_NEGATIVE, $start, $end),
+            ],
+        ]);
+    }
+
+    private function distribution(string $uid, Carbon $start): array
+    {
+        $d = Interaction::where('user_id', $uid)
+            ->whereBetween('occurred_at', [$start->copy()->startOfDay(), now()->endOfDay()])
+            ->selectRaw('type, count(*) c')->groupBy('type')->pluck('c', 'type');
+
+        return [
+            'positive' => (int) ($d[Interaction::TYPE_POSITIVE] ?? 0),
+            'negative' => (int) ($d[Interaction::TYPE_NEGATIVE] ?? 0),
+            'neutral' => (int) ($d[0] ?? 0),
+        ];
+    }
+
+    /** Rentetan hari berturut (mundur dari hari ini) yang ada momennya. */
+    private function streak(string $uid): int
+    {
+        $dates = Interaction::where('user_id', $uid)
+            ->selectRaw('distinct (occurred_at)::date as d')
+            ->pluck('d')
+            ->map(fn ($d) => Carbon::parse($d)->toDateString())
+            ->flip();
+
+        $streak = 0;
+        $cur = today();
+        while ($dates->has($cur->toDateString())) {
+            $streak++;
+            $cur = $cur->subDay();
+        }
+
+        return $streak;
+    }
+
+    private function recap(string $uid): ?array
+    {
+        $top = Person::where('user_id', $uid)->where('pos_count', '>', 0)
+            ->orderByDesc('pos_count')->first();
+
+        return $top ? ['person_id' => $top->id, 'pos_count' => $top->pos_count] : null;
+    }
+
+    /** @return array<int,string> distinct person_id yang ditandai hari ini pada type tertentu. */
+    private function peopleTaggedToday(string $uid, int $type, Carbon $start, Carbon $end): array
+    {
+        return DB::table('interaction_people as ip')
+            ->join('interactions as i', 'i.id', '=', 'ip.interaction_id')
+            ->where('i.user_id', $uid)
+            ->where('i.type', $type)
+            ->whereBetween('i.occurred_at', [$start, $end])
+            ->distinct()
+            ->pluck('ip.person_id')
+            ->all();
+    }
+}

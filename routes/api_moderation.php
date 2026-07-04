@@ -6,20 +6,19 @@ use App\Http\Controllers\Console\QueueController;
 use App\Http\Controllers\Console\ReportsController;
 use App\Http\Controllers\Console\TermsController;
 use App\Http\Controllers\ReportController;
-use App\Support\TokenAbilities;
 use Illuminate\Support\Facades\Route;
 
 /*
-| MODERATION (§A5/§A6)
+| MODERATION (§A5/§A6) — di /api/v1, auth JWT.
 | - POST /reports: terbuka untuk semua pengguna terautentikasi (§06).
-| - /mod/*: gerbang admin — token app + ability 'mod' (hanya pasca-2FA) + role admin.
+| - /mod/*: gerbang admin — token JWT ber-scope 'mod' (hanya pasca-2FA) + role admin.
 */
 
 // Pelaporan pengguna.
-Route::middleware('auth:sanctum')->post('/reports', [ReportController::class, 'store']);
+Route::middleware('auth:api')->post('/reports', [ReportController::class, 'store']);
 
-// Konsol moderasi — berlapis: auth → ability mod → middleware moderator (§A6).
-Route::middleware(['auth:sanctum', 'abilities:'.TokenAbilities::MOD, 'moderator'])
+// Konsol moderasi — berlapis: JWT → middleware moderator (role admin + 2FA + scope mod).
+Route::middleware(['auth:api', 'moderator'])
     ->prefix('mod')
     ->group(function () {
         // Antrean moderasi (§B3).
