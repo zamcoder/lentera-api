@@ -101,7 +101,13 @@ class AiSummarizer
 
             $resp = Http::timeout(20)->post($url, [
                 'contents' => [['parts' => [['text' => $prompt]]]],
-                'generationConfig' => ['temperature' => 0.7, 'maxOutputTokens' => 160],
+                'generationConfig' => [
+                    'temperature' => 0.7,
+                    'maxOutputTokens' => 256,
+                    // Matikan "thinking" (Gemini 2.5) — kalau tidak, token thinking
+                    // menghabiskan budget & jawaban terpotong.
+                    'thinkingConfig' => ['thinkingBudget' => 0],
+                ],
             ]);
             $resp->throw();
 
