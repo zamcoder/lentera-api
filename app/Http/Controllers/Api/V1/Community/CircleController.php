@@ -3,21 +3,80 @@
 namespace App\Http\Controllers\Api\V1\Community;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Community\StoreCircleRequest;
 use App\Http\Resources\CircleResource;
 use App\Http\Resources\PostResource;
 use App\Models\Circle;
 use App\Models\CircleMember;
 use App\Models\Post;
 use App\Models\Reaction;
+use App\Services\Moderation\BannedWordFilter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 /**
- * CircleController (v1, §8) — lingkaran kecil bertema: list/detail/join/leave + feed.
+ * CircleController (v1, §8) — lingkaran kecil bertema: list/detail/create/join/leave + feed.
  */
 class CircleController extends Controller
 {
+    private const PALS = ['mint', 'peach', 'lav'];
+
+    private const MAX_PER_USER = 5;
+
+    /** POST /api/v1/circles — buat lingkaran (langsung publik; filter kata terlarang). */
+    public function store(StoreCircleRequest $request, BannedWordFilter $filter): JsonResponse
+    {
+        $uid = auth('api')->id();
+        $data = $request->validated();
+
+        if (Circle::where('created_by', $uid)->count() >= self::MAX_PER_USER) {
+            return response()->json(['message' => 'Kamu sudah mencapai batas '.self::MAX_PER_USER.' lingkaran.'], 422);
+        }
+
+        // Filter kata terlarang di nama + deskripsi (tolak bila melanggar).
+        if ($filter->scan(trim($data['name'].' '.($data['description'] ?? '')))['blocked']) {
+            return response()->json([
+                'message' => 'Nama atau deskripsi mengandung kata yang tidak diperbolehkan.',
+                'errors' => ['name' => ['Mengandung kata yang tidak diperbolehkan.']],
+            ], 422);
+        }
+
+        $circle = DB::transaction(function () use ($data, $uid) {
+            $circle = Circle::create([
+                'slug' => $this->uniqueSlug($data['name']),
+                'theme' => $data['name'],
+                'emoji' => ($data['emoji'] ?? '') !== '' ? $data['emoji'] : '🌱',
+                'pal' => self::PALS[array_rand(self::PALS)],
+                'description' => $data['description'] ?? null,
+                'member_count' => 1,
+                'created_by' => $uid,
+            ]);
+            CircleMember::create(['circle_id' => $circle->id, 'user_id' => $uid]);
+
+            return $circle;
+        });
+
+        $circle->loadCount(['members as joined_count' => fn ($q) => $q->where('user_id', $uid)]);
+
+        // Flat (bukan {data:...}) agar cocok bentuk item GET /circles.
+        return response()->json((new CircleResource($circle))->resolve(), 201);
+    }
+
+    /** Slug unik dari nama (nama boleh duplikat, slug tetap unik). */
+    private function uniqueSlug(string $name): string
+    {
+        $base = Str::slug($name) ?: 'lingkaran';
+        $slug = $base;
+        while (Circle::where('slug', $slug)->exists()) {
+            $slug = $base.'-'.Str::lower(Str::random(4));
+        }
+
+        return $slug;
+    }
+
     /** GET /api/v1/circles — daftar lingkaran (+joined, member_count). */
     public function index(): AnonymousResourceCollection
     {

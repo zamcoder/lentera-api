@@ -12,6 +12,33 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Pool "pertanyaan bersama harian" (§9) — dirotasi 1 per hari (WIB) secara
+    | deterministik (create-on-read, tanpa cron). Edit bebas; urutan = rotasi.
+    |--------------------------------------------------------------------------
+    */
+    'prompt_pool' => [
+        'Kebaikan kecil apa yang kamu terima hari ini?',
+        'Satu hal yang kamu syukuri pagi ini?',
+        'Siapa yang membuatmu merasa aman belakangan ini?',
+        'Batas kecil apa yang berhasil kamu jaga minggu ini?',
+        'Kapan terakhir kamu merasa benar-benar tenang?',
+        'Hal kecil apa yang membuatmu tersenyum hari ini?',
+        'Apa yang ingin kamu lepaskan pelan-pelan?',
+        'Satu pencapaian kecil yang layak kamu rayakan?',
+        'Apa yang tubuhmu butuhkan hari ini?',
+        'Kepada siapa kamu ingin mengucapkan terima kasih?',
+        'Momen apa yang ingin kamu ingat dari hari ini?',
+        'Apa yang membuatmu merasa cukup hari ini?',
+        'Satu hal yang kamu maafkan dari dirimu sendiri?',
+        'Ruang atau tempat mana yang membuatmu merasa pulih?',
+        'Apa harapan lembut untuk dirimu besok?',
+        'Kata baik apa yang ingin kamu katakan pada dirimu sendiri?',
+        'Apa yang membuatmu bertahan hari ini?',
+        'Kebiasaan kecil apa yang menjaga ketenanganmu?',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Moderasi (§06)
     |--------------------------------------------------------------------------
     */

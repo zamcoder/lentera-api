@@ -63,13 +63,16 @@ Field: `name_enc/name_nonce`, `rel_enc/rel_nonce`, `recall_enc/recall_nonce` (ba
 
 ## Lingkaran (§8)
 `GET /circles` · `GET /circles/{id}` · `GET /circles/{id}/feed` · `POST /circles/{id}/join` · `DELETE /circles/{id}/join`
+| Method | Path | Catatan |
+|---|---|---|
+| POST | `/circles` | Buat lingkaran: `{name, emoji?, description?}` → **201** item circle (flat, sama bentuk item `GET /circles`); pembuat auto-join (`joined:true`, `member_count:1`). Langsung publik; nama/desc disaring kata terlarang (422 bila melanggar); maks **5/user**; nama boleh duplikat (slug unik). |
 
 ## Prompt & Kirim kekuatan (§9)
 | Method | Path | Catatan |
 |---|---|---|
-| GET | `/prompts/today` | pertanyaan + `share_count` |
+| GET | `/prompts/today` | pertanyaan hari ini + `share_count` (selalu ada — dirotasi harian dari pool, WIB) |
 | GET | `/prompts/today/answers?cursor=` | jawaban approved |
-| POST | `/prompts/today/answers` | `{text, anon?}` → dimoderasi |
+| POST | `/prompts/today/answers` | `{text, anon?}` → **dimoderasi sinkron**: `moderation.status` = approved/held/rejected langsung |
 | GET | `/strength/queue` | struggle (butuh dukungan) |
 | POST | `/strength/{postId}/send` | `{message}` siap-pakai — **instan** |
 

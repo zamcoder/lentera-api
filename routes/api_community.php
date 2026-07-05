@@ -24,6 +24,7 @@ Route::middleware('auth:api')->group(function () {
 
     // Lingkaran (§8).
     Route::get('/circles', [CircleController::class, 'index']);
+    Route::post('/circles', [CircleController::class, 'store'])->middleware('throttle:community-post');
     Route::get('/circles/{circle}', [CircleController::class, 'show']);
     Route::get('/circles/{circle}/feed', [CircleController::class, 'feed']);
     Route::post('/circles/{circle}/join', [CircleController::class, 'join']);

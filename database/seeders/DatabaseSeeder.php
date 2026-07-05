@@ -83,9 +83,7 @@ class DatabaseSeeder extends Seeder
 
     private function seedTodayPrompt(): void
     {
-        DailyPrompt::firstOrCreate(
-            ['prompt_date' => now()->toDateString()],
-            ['body' => 'Kebaikan kecil apa yang kamu terima hari ini?'],
-        );
+        // Prompt hari ini dari pool (rotasi harian, WIB) — konsisten dgn runtime.
+        DailyPrompt::todayFor(config('lentera.timezone'));
     }
 }

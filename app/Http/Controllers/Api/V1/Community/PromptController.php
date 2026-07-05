@@ -27,10 +27,6 @@ class PromptController extends Controller
     {
         $prompt = $this->todayPrompt();
 
-        if (! $prompt) {
-            return response()->json(['prompt' => null, 'message' => 'Belum ada prompt hari ini.']);
-        }
-
         return response()->json([
             'prompt' => [
                 'id' => $prompt->id,
@@ -41,13 +37,14 @@ class PromptController extends Controller
         ]);
     }
 
-    /** GET /api/v1/prompts/today/answers?cursor= — jawaban orang-orang. */
+    /**
+     * GET /api/v1/prompts/today/answers?cursor= — jawaban yang tampil (approved).
+     * Jawaban dimoderasi SINKRON saat dikirim → status akhir langsung diketahui
+     * lewat respons POST (approved tampil di sini; held→safe_space; rejected).
+     */
     public function answers(Request $request): JsonResponse
     {
         $prompt = $this->todayPrompt();
-        if (! $prompt) {
-            return response()->json(['data' => [], 'next_cursor' => null]);
-        }
 
         $page = PromptAnswer::where('prompt_id', $prompt->id)
             ->published()
@@ -98,8 +95,8 @@ class PromptController extends Controller
         ], 201);
     }
 
-    private function todayPrompt(): ?DailyPrompt
+    private function todayPrompt(): DailyPrompt
     {
-        return DailyPrompt::whereDate('prompt_date', now()->toDateString())->first();
+        return DailyPrompt::todayFor(config('lentera.timezone'));
     }
 }
