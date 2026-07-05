@@ -56,6 +56,9 @@ Route::prefix('v1')->group(function () {
 
     Route::get('/me', [MeController::class, 'show'])->middleware('auth:api');
 
+    // ---------- Lengkapi profil (§1): tambah/ganti/hapus email & nomor — JWT ----------
+    require __DIR__.'/api_profile.php';
+
     // ---------- Sync / Vault (§2) — JWT ----------
     require __DIR__.'/api_vault.php';
 
