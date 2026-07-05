@@ -20,6 +20,15 @@ Dua bidang data: **jurnal E2E** (`*_enc` = ciphertext base64 dari device, server
 | GET | `/me` | JWT | profil + providers + status sinkron + **`kdf_salt`** (base64) |
 | POST | `/auth/logout` | JWT | cabut (blacklist) token |
 
+### Lengkapi profil — tambah/ganti/hapus metode masuk (§1)
+| Method | Path | Auth | Catatan |
+|---|---|---|---|
+| POST | `/profile/email` · `/profile/email/confirm` | JWT | tambah/ganti email (OTP via **email**); confirm `{email, code}` → `{user}` (bentuk `/me`) |
+| POST | `/profile/phone` · `/profile/phone/confirm` | JWT | tambah/ganti nomor (OTP via **WhatsApp/GOWA**); confirm `{phone, code}` → `{user}` |
+| DELETE | `/profile/identity` | JWT | `{provider:"email"\|"phone"}` — hapus, guard sisakan ≥1 cara masuk |
+
+> Verifikasi kepemilikan wajib; keunikan global (422 bila dipakai akun lain). **`kdf_salt` tak pernah berubah** → cadangan E2E lama tetap terbaca. +nomor mengaktifkan login OTP WA; +email mengaktifkan email recovery. `dev_code` `null` di produksi.
+
 ## Vault E2E (§2)
 | Method | Path | Catatan |
 |---|---|---|
