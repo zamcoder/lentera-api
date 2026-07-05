@@ -13,13 +13,17 @@ Dua bidang data yang **tidak pernah bercampur** (§05 Rencana Produk):
    pseudonim, wajib lewat pipa moderasi 2 lapis (§06).
 
 ## Domain API (semua di `/api/v1`, JWT)
-Auth+/me · Vault sync · Orang (People) · Momen/Interaksi + Media · Mood+Statistik+Today ·
-Komunitas Feed/Post+reaksi+hide · Lingkaran · Prompt bersama + Kirim kekuatan ·
-Laporan + sinkron banned-terms · Keselamatan/hotlines · Pengaturan + Notifikasi ·
-Konsol moderasi `/mod/*` (admin, scope `mod`).
+Auth (email+sandi, **OTP WhatsApp**, Google id_token) + **Lengkapi profil** (tambah/ganti email & nomor) + `/me` ·
+Vault sync (E2E, 409 konflik-versi + gerbang `sync_on`) · Orang (People) · Momen/Interaksi + Media ·
+Mood + Statistik + Today + **kalender mood bulanan** · **Refleksi harian "Tiga baris malam"** (E2E) ·
+Komunitas Feed/Post + reaksi + hide · Lingkaran (+ **buat lingkaran**) · **Prompt bersama harian** + Kirim kekuatan ·
+**Ringkasan AI** (consent-gated, transien) · Laporan + sinkron banned-terms · Keselamatan/hotlines ·
+Pengaturan + Notifikasi (**FCM push**) · Konsol moderasi `/mod/*` (admin, scope `mod`) ·
+**Waitlist** `POST /subscribe` (landing page, di luar `/v1`).
 
 **Referensi lengkap:** [docs/API_ENDPOINTS.md](docs/API_ENDPOINTS.md) ·
 **Postman:** [docs/lentera-api.postman_collection.json](docs/lentera-api.postman_collection.json) ·
+**Setup WhatsApp/FCM:** [docs/WHATSAPP-FCM-SETUP.md](docs/WHATSAPP-FCM-SETUP.md) ·
 sumber kebenaran bentuk data: `API_REQUIREMENTS.md`, `lib/data/models.dart`.
 
 ## Struktur
@@ -35,12 +39,13 @@ lentera-api/                 ← satu proyek Laravel
 ```
 
 ## Stack
-- PHP 8.2 · Laravel 11 · **JWT** (`tymon/jwt-auth`) untuk API
+- PHP 8.3 · Laravel 11 · **JWT** (`tymon/jwt-auth`) untuk API
 - PostgreSQL 16 (BYTEA untuk ciphertext, `citext`, `gen_random_uuid`)
 - Argon2id untuk hash sandi · TOTP (RFC 6238) untuk 2FA konsol
-- Queue (database) untuk moderasi asinkron · Gemini API (Lapis 2)
-- Konsol: React 19 · Vite (bawaan Laravel) · React Router · Newsreader/DM Sans
-- API Resources (shaping) · Form Request (validasi) · error `{message, errors}` · **74 feature test**
+- Queue (database) untuk moderasi asinkron · Gemini API (`gemini-flash-lite-latest`, Lapis 2 + Ringkasan AI)
+- OTP: **WhatsApp** via gateway GOWA (`go-whatsapp-web-multidevice`) · **Email** via Brevo SMTP · **FCM** push
+- Laravel **Telescope** (debug, di-prune tiap 3 hari) · Konsol: React 19 · Vite · React Router · Newsreader/DM Sans
+- API Resources (shaping) · Form Request (validasi) · error `{message, errors}` · **120 feature test**
 
 ## Setup
 
@@ -124,7 +129,7 @@ kehangatan, bukan pertumbuhan.
 
 ## Test
 ```bash
-php artisan test          # 74 feature test (Auth, Vault, People, Interaksi, Media, Stats, Komunitas, Circles, Prompt/Strength, Moderasi, Settings)
+php artisan test          # 120 feature test (Auth+OTP+Profil, Vault+sync-gate, People, Interaksi, Media, Stats+Refleksi, Komunitas, Circles, Prompt/Strength, Moderasi, Settings, AI, Waitlist)
 ```
 DB test: `lentera_test` (lihat `phpunit.xml`).
 
@@ -136,8 +141,10 @@ Peta domain (temanlentera.id):
 
 | Host | Untuk |
 |---|---|
-| `console.temanlentera.id` | Semuanya — konsol admin (SPA) **dan** API (dipakai konsol & mobile via `/api`) |
-| `temanlentera.id` (root) | Landing page — dibuat terpisah nanti |
+| `console.temanlentera.id` | Konsol admin (SPA) **dan** API (dipakai konsol & mobile via `/api`) |
+| `temanlentera.id` (root) | Landing page + form waitlist (`POST /api/subscribe`) — **live** |
 
-Satu subdomain, satu server block Nginx. Konsol same-origin → tanpa CORS, tanpa
-perubahan kode. Gerbang admin = **2FA** (tanpa IP allowlist).
+Konsol same-origin dengan API → tanpa CORS. Gerbang admin = **2FA** (tanpa IP
+allowlist). Gateway WhatsApp (GOWA) berjalan lokal di `127.0.0.1:3000` (tak
+terekspos publik). Detail server (systemd `lentera-queue`/`lentera-wa`, Nginx,
+Brevo, FCM) ada di **[DEPLOYMENT.md](DEPLOYMENT.md)**.
