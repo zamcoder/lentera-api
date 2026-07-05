@@ -18,5 +18,7 @@ Route::middleware('auth:api')->group(function () {
     // Refleksi harian E2E (§6).
     Route::get('/reflections', [ReflectionController::class, 'index']);
     Route::get('/reflections/{date}', [ReflectionController::class, 'show']);
-    Route::put('/reflections/{date}', [ReflectionController::class, 'upsert']);
+    // sync.on: refleksi E2E ditolak 409 bila sinkron awan dimatikan (mood/stats
+    // agregat tetap jalan — bukan data E2E).
+    Route::put('/reflections/{date}', [ReflectionController::class, 'upsert'])->middleware('sync.on');
 });

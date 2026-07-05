@@ -70,6 +70,64 @@ class VaultTest extends TestCase
             ->assertJsonPath('version', 2);
     }
 
+    public function test_stale_version_is_rejected_with_conflict(): void
+    {
+        $user = User::factory()->create();
+
+        // Device A backup ke versi 3.
+        $this->actingAsJwt($user)->putJson('/api/v1/vault/backup', ['ciphertext' => base64_encode(random_bytes(32)), 'version' => 3])
+            ->assertOk()->assertJsonPath('version', 3);
+
+        // Device B (basi) coba backup versi 2 → 409 + versi terkini.
+        $this->actingAsJwt($user)->putJson('/api/v1/vault/backup', ['ciphertext' => base64_encode(random_bytes(32)), 'version' => 2])
+            ->assertStatus(409)
+            ->assertJsonPath('code', 'version_conflict')
+            ->assertJsonPath('current_version', 3);
+
+        // Versi sama juga ditolak (idempoten-safe: harus naik).
+        $this->actingAsJwt($user)->putJson('/api/v1/vault/backup', ['ciphertext' => base64_encode(random_bytes(32)), 'version' => 3])
+            ->assertStatus(409);
+
+        // Versi lebih baru diterima.
+        $this->actingAsJwt($user)->putJson('/api/v1/vault/backup', ['ciphertext' => base64_encode(random_bytes(32)), 'version' => 4])
+            ->assertOk()->assertJsonPath('version', 4);
+    }
+
+    public function test_sync_off_blocks_writes_but_allows_reads_and_delete(): void
+    {
+        $user = User::factory()->create();
+        // Ada cadangan lama saat sinkron masih nyala.
+        $this->actingAsJwt($user)->putJson('/api/v1/vault/backup', ['ciphertext' => base64_encode(random_bytes(32))])->assertOk();
+
+        // Matikan sinkron.
+        $this->actingAsJwt($user)->putJson('/api/v1/settings/sync', ['enabled' => false])->assertOk();
+
+        // Tulis (PUT backup) ditolak 409 sync_disabled.
+        $this->actingAsJwt($user)->putJson('/api/v1/vault/backup', ['ciphertext' => base64_encode(random_bytes(32))])
+            ->assertStatus(409)->assertJsonPath('code', 'sync_disabled');
+
+        // Baca (restore/status) tetap boleh.
+        $this->actingAsJwt($user)->getJson('/api/v1/vault/restore')->assertOk();
+        $this->actingAsJwt($user)->getJson('/api/v1/vault/status')->assertOk();
+
+        // Hapus (hak lupa) tetap boleh meski sinkron mati.
+        $this->actingAsJwt($user)->deleteJson('/api/v1/vault/backup')->assertOk();
+    }
+
+    public function test_sync_off_blocks_e2e_entity_writes(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAsJwt($user)->putJson('/api/v1/settings/sync', ['enabled' => false])->assertOk();
+
+        // People / interaksi / refleksi = data E2E → tulis ditolak saat sinkron mati.
+        $this->actingAsJwt($user)->postJson('/api/v1/people', [])->assertStatus(409)->assertJsonPath('code', 'sync_disabled');
+        $this->actingAsJwt($user)->postJson('/api/v1/interactions', [])->assertStatus(409)->assertJsonPath('code', 'sync_disabled');
+        $this->actingAsJwt($user)->putJson('/api/v1/reflections/2026-07-05', [])->assertStatus(409)->assertJsonPath('code', 'sync_disabled');
+
+        // Baca tetap boleh.
+        $this->actingAsJwt($user)->getJson('/api/v1/people')->assertOk();
+    }
+
     public function test_sync_toggle(): void
     {
         $user = User::factory()->create();

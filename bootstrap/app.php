@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\EnsureModeratorJwt;
+use App\Http\Middleware\EnsureSyncEnabled;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -20,6 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Gerbang konsol admin (role + 2FA + scope mod pada JWT).
         $middleware->alias([
             'moderator' => EnsureModeratorJwt::class,
+            'sync.on' => EnsureSyncEnabled::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

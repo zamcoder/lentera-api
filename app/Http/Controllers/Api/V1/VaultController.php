@@ -47,6 +47,19 @@ class VaultController extends Controller
 
         $user = auth('api')->user();
         $existing = VaultBackup::where('user_id', $user->id)->first();
+
+        // Anti-timpa: FE mengirim version = versi_terakhir + 1. Bila version yang
+        // dikirim BASI (<= yang tersimpan), berarti device lain sudah backup versi
+        // lebih baru → tolak 409 (jangan menimpa data device lain). FE harus GET
+        // /vault/restore dulu, gabungkan, lalu backup ulang dengan versi berikutnya.
+        if (isset($data['version']) && $existing && $data['version'] <= $existing->version) {
+            return response()->json([
+                'message' => 'Versi cadangan basi — device lain sudah menyimpan versi lebih baru. Restore dulu, lalu backup ulang.',
+                'code' => 'version_conflict',
+                'current_version' => $existing->version,
+            ], 409);
+        }
+
         $version = $data['version'] ?? (($existing->version ?? 0) + 1);
 
         $vault = VaultBackup::updateOrCreate(
