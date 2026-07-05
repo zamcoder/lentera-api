@@ -17,7 +17,7 @@ Dua bidang data: **jurnal E2E** (`*_enc` = ciphertext base64 dari device, server
 | POST | `/auth/2fa/verify` | pending JWT | → token (admin: scope `mod`) |
 | POST | `/auth/2fa/setup` · `/enable` · `/disable` | JWT (admin) | TOTP |
 | POST | `/auth/refresh` | JWT (boleh kedaluwarsa) | token lama→baru (blacklist lama); token APP (mod hanya via 2FA) |
-| GET | `/me` | JWT | profil + providers + status sinkron + **`kdf_salt`** (base64) |
+| GET | `/me` | JWT | profil + providers + `email`/`phone` (E.164, null bila kosong) + status sinkron + **`kdf_salt`** (base64) |
 | POST | `/auth/logout` | JWT | cabut (blacklist) token |
 
 ### Lengkapi profil — tambah/ganti/hapus metode masuk (§1)

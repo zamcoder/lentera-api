@@ -2,39 +2,17 @@
 
 **Env:** `https://console.temanlentera.id/api/v1`. Bug (bukan fitur baru) ada di [BE_BUGS.md](docs/BE_BUGS.md).
 
-> **Status per 2026-07-05:** semua permintaan sudah **shipped**. **Lengkapi Profil** baru saja dikirim & diverifikasi live (lihat di bawah). Tak ada item terbuka.
-
----
-
-## ✅ SHIPPED (2026-07-05) — Lengkapi profil: tambah/ganti/hapus email & nomor HP
-
-**Live & terverifikasi di produksi.** Endpoint (semua butuh JWT):
-```
-# Email (OTP dikirim via email — Brevo SMTP)
-POST   /profile/email          { "email": "user@contoh.id" }        → 200 { message, dev_code:null }
-POST   /profile/email/confirm  { "email": "user@contoh.id", "code": "123456" } → 200 { user }
-
-# Nomor (OTP dikirim via WhatsApp — gateway GOWA yang sudah ada)
-POST   /profile/phone          { "phone": "+62..." }                → 200 { message, dev_code:null }
-POST   /profile/phone/confirm  { "phone": "+62...", "code": "123456" }         → 200 { user }
-
-# Hapus salah satu metode (guard: sisakan ≥1 cara masuk)
-DELETE /profile/identity       { "provider": "email" | "phone" }    → 200 { user }
-```
-> ⚠️ **Catatan bentuk `confirm`:** kirim **email/phone yang sama** seperti saat request (stateless, tanpa pending state di server). `{ user }` = objek user terbaru, **bentuk sama persis dengan `GET /me`** (`{ user: { id, handle, email, providers[], sync, kdf_salt, ... } }`).
-
-**Jawaban keputusan (poin 1–5):**
-1. **Verifikasi wajib: YA.** Email → kode 6 digit ke email; nomor → OTP WhatsApp. Baru terpasang setelah `confirm` sukses. Kode: 6 digit, 5 menit, maks 5 percobaan.
-2. **Password:** menambah email = **kanal kontak + pemulihan** (mengaktifkan email recovery). **Tidak** otomatis set password. Untuk login penuh email+password, user set sandi lewat alur **recovery** yang sudah ada (`POST /auth/recovery` → `/auth/recovery/confirm` bisa **men-set** password, bukan cuma reset). Tak ada endpoint set-password baru.
-3. **Keunikan:** email/nomor yang sudah dipakai **akun lain** ditolak **422** — email: *"Email ini sudah dipakai akun lain."*, nomor: *"Nomor ini sudah dipakai akun lain."* (Sudah jadi milik sendiri → 422 *"sudah terpasang di akunmu."*)
-4. **Efek:** menambah nomor → **login OTP WA otomatis aktif** (login `/auth/otp/*` mencocokkan identitas phone). Menambah email → **email recovery otomatis aktif**. ✅ **`kdf_salt` TIDAK disentuh** — cadangan E2E lama tetap terbaca.
-5. **Ganti/hapus:** **Ganti** = panggil `POST /profile/email|phone` lagi dgn nilai baru → `confirm` mengganti identitas lama (satu email & satu nomor aktif per user). **Hapus** = `DELETE /profile/identity {provider}`, ditolak **422** bila itu satu-satunya cara masuk tersisa.
-
-**`dev_code`** selalu `null` di produksi (kode asli hanya via email/WA). FE: tampilkan layar OTP 6-digit; jangan andalkan `dev_code`.
+> **Status per 2026-07-06:** semua permintaan **shipped**. Tak ada item terbuka.
 
 ---
 
 ## ✅ ARSIP — sudah terjawab / shipped (tak perlu aksi)
+
+### Field `phone` di payload user (`/me` & auth/profile) — ✅ shipped (2026-07-06)
+Objek `user` sekarang menyertakan **`phone`** (E.164 mentah, mis. `"+6281234567890"`; `null` bila belum ada nomor) — di `GET /me`, `POST /profile/{phone,email}/confirm`, dan semua respons token auth (register/login/otp/oauth/refresh). Diambil dari `auth_identities` (provider=phone), bukan kolom baru. **Tidak dimask** (pemilik melihat nomornya sendiri; FE boleh memformat/mask saat menampilkan). FE kini bisa menampilkan nomor terpasang di halaman "Cara masuk", bukan sekadar "Terhubung ✓".
+
+### Lengkapi Profil — tambah/ganti/hapus email & nomor (verifikasi OTP) — ✅ shipped & terintegrasi
+Endpoint `POST /profile/{email,phone}` + `/confirm` (stateless: kirim ulang identifier + kode; confirm balas `{user}`) & `DELETE /profile/identity`. Kontrak di `PROMPTS-flutter-complete-profile.md`. FE: halaman **"Cara masuk"** (Atur → kartu akun) dengan alur input → OTP 6 digit, resend, hapus (muncul hanya kalau >1 metode). Efek: tambah nomor → login WA aktif; tambah email → recovery email aktif; `kdf_salt` tak berubah.
 
 ### Kontrak "Data & Cadangan" (vault backup/restore/recovery/sync) — ✅ terjawab
 Semua pertanyaan konfirmasi kami sudah dijawab BE lewat dokumen **`PROMPTS-flutter-auth-vault-sync.md`** (2026-07-05, "sudah diverifikasi live"). Ringkasan jawaban + status FE:
