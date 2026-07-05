@@ -51,7 +51,6 @@ class CircleController extends Controller
                 'emoji' => ($data['emoji'] ?? '') !== '' ? $data['emoji'] : '🌱',
                 'pal' => self::PALS[array_rand(self::PALS)],
                 'description' => $data['description'] ?? null,
-                'member_count' => 1,
                 'created_by' => $uid,
             ]);
             CircleMember::create(['circle_id' => $circle->id, 'user_id' => $uid]);
@@ -59,7 +58,7 @@ class CircleController extends Controller
             return $circle;
         });
 
-        $circle->loadCount(['members as joined_count' => fn ($q) => $q->where('user_id', $uid)]);
+        $circle->loadCount($this->counts());
 
         // Flat (bukan {data:...}) agar cocok bentuk item GET /circles.
         return response()->json((new CircleResource($circle))->resolve(), 201);
@@ -80,8 +79,8 @@ class CircleController extends Controller
     /** GET /api/v1/circles — daftar lingkaran (+joined, member_count). */
     public function index(): AnonymousResourceCollection
     {
-        $circles = Circle::withCount($this->joinedCount())
-            ->orderByDesc('member_count')->orderBy('theme')->get();
+        $circles = Circle::withCount($this->counts())
+            ->orderByDesc('members_count')->orderBy('theme')->get();
 
         return CircleResource::collection($circles);
     }
@@ -89,7 +88,7 @@ class CircleController extends Controller
     /** GET /api/v1/circles/{circle} — detail. */
     public function show(Circle $circle): CircleResource
     {
-        $circle->loadCount($this->joinedCount());
+        $circle->loadCount($this->counts());
 
         return new CircleResource($circle);
     }
@@ -97,35 +96,28 @@ class CircleController extends Controller
     /** POST /api/v1/circles/{circle}/join — gabung (idempoten). */
     public function join(Circle $circle): JsonResponse
     {
-        $member = CircleMember::firstOrCreate([
+        CircleMember::firstOrCreate([
             'circle_id' => $circle->id,
             'user_id' => auth('api')->id(),
         ]);
 
-        if ($member->wasRecentlyCreated) {
-            $circle->increment('member_count');
-        }
-
-        return response()->json(['joined' => true, 'member_count' => $circle->fresh()->member_count]);
+        return response()->json(['joined' => true, 'member_count' => $circle->members()->count()]);
     }
 
     /** DELETE /api/v1/circles/{circle}/join — keluar. */
     public function leave(Circle $circle): JsonResponse
     {
-        $deleted = CircleMember::where('circle_id', $circle->id)
+        CircleMember::where('circle_id', $circle->id)
             ->where('user_id', auth('api')->id())->delete();
 
-        if ($deleted) {
-            $circle->decrement('member_count');
-        }
-
-        return response()->json(['joined' => false, 'member_count' => $circle->fresh()->member_count]);
+        return response()->json(['joined' => false, 'member_count' => $circle->members()->count()]);
     }
 
     /** GET /api/v1/circles/{circle}/feed — feed kiriman approved di lingkaran. */
     public function feed(Request $request, Circle $circle): JsonResponse
     {
         $uid = auth('api')->id();
+        $circle->loadCount($this->counts());
 
         $page = Post::query()
             ->published()
@@ -146,11 +138,17 @@ class CircleController extends Controller
         ]);
     }
 
-    /** withCount agar `joined_count` = 1 bila user ikut lingkaran. */
-    private function joinedCount(): array
+    /**
+     * withCount: `members_count` = jumlah anggota ASLI (live), `joined_count` =
+     * apakah user saat ini ikut. member_count yang tampil selalu dari sini.
+     */
+    private function counts(): array
     {
         $uid = auth('api')->id();
 
-        return ['members as joined_count' => fn ($q) => $q->where('user_id', $uid)];
+        return [
+            'members as members_count',
+            'members as joined_count' => fn ($q) => $q->where('user_id', $uid),
+        ];
     }
 }

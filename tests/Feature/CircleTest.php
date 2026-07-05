@@ -28,9 +28,10 @@ class CircleTest extends TestCase
 
         $this->assertCount(4, $res->json('data'));
         $res->assertJsonStructure(['data' => [['id', 'name', 'emoji', 'desc', 'pal', 'members', 'member_count', 'joined']]]);
-        // "Syukur harian" 3400 → "3,4rb".
+        // Live count: circle seed belum punya anggota asli → 0 (angka jujur).
         $syukur = collect($res->json('data'))->firstWhere('name', 'Syukur harian');
-        $this->assertSame('3,4rb', $syukur['members']);
+        $this->assertSame(0, $syukur['member_count']);
+        $this->assertSame('0', $syukur['members']);
         $this->assertFalse($syukur['joined']);
     }
 
@@ -38,19 +39,20 @@ class CircleTest extends TestCase
     {
         $user = User::factory()->create();
         $circle = Circle::where('theme', 'Menjaga batas')->first();
-        $before = $circle->member_count;
 
+        // Live count: mulai 0 anggota asli → join jadi 1.
         $this->actingAsJwt($user)->postJson("/api/v1/circles/{$circle->id}/join")
-            ->assertOk()->assertJsonPath('joined', true)->assertJsonPath('member_count', $before + 1);
+            ->assertOk()->assertJsonPath('joined', true)->assertJsonPath('member_count', 1);
         $this->assertDatabaseHas('circle_members', ['circle_id' => $circle->id, 'user_id' => $user->id]);
 
         // joined tercermin di index.
         $joined = collect($this->actingAsJwt($user)->getJson('/api/v1/circles')->json('data'))
             ->firstWhere('id', $circle->id);
         $this->assertTrue($joined['joined']);
+        $this->assertSame(1, $joined['member_count']);
 
         $this->actingAsJwt($user)->deleteJson("/api/v1/circles/{$circle->id}/join")
-            ->assertOk()->assertJsonPath('joined', false)->assertJsonPath('member_count', $before);
+            ->assertOk()->assertJsonPath('joined', false)->assertJsonPath('member_count', 0);
         $this->assertDatabaseMissing('circle_members', ['circle_id' => $circle->id, 'user_id' => $user->id]);
     }
 

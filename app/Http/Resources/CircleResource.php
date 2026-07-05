@@ -13,14 +13,18 @@ class CircleResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
+        // member_count = jumlah anggota ASLI (live dari circle_members via
+        // withCount 'members as members_count'), bukan angka seed tersimpan.
+        $count = (int) ($this->members_count ?? 0);
+
         return [
             'id' => $this->id,
             'name' => $this->theme,
             'emoji' => $this->emoji,
             'desc' => $this->description,
             'pal' => $this->pal,
-            'member_count' => (int) $this->member_count,
-            'members' => $this->formatMembers((int) $this->member_count),
+            'member_count' => $count,
+            'members' => $this->formatMembers($count),
             'joined' => (int) ($this->joined_count ?? 0) > 0,
         ];
     }

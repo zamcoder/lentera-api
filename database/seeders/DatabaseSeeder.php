@@ -74,8 +74,10 @@ class DatabaseSeeder extends Seeder
             Circle::updateOrCreate(
                 ['slug' => Str::slug($c['theme'])],
                 [
+                    // member_count TIDAK di-seed: jumlah anggota dihitung live dari
+                    // circle_members (angka jujur). Kolom lama dibiarkan default 0.
                     'theme' => $c['theme'], 'emoji' => $c['emoji'], 'pal' => $c['pal'],
-                    'description' => $c['description'], 'member_count' => $c['members'],
+                    'description' => $c['description'],
                 ],
             );
         }
