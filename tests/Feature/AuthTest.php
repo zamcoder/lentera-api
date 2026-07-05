@@ -96,11 +96,17 @@ class AuthTest extends TestCase
     {
         $req = $this->postJson('/api/v1/auth/otp/request', ['phone' => '+6281200001111'])->assertOk();
 
-        $this->postJson('/api/v1/auth/otp/verify', ['phone' => '+6281200001111', 'code' => $req->json('dev_code')])
+        $res = $this->postJson('/api/v1/auth/otp/verify', ['phone' => '+6281200001111', 'code' => $req->json('dev_code')])
             ->assertOk()
             ->assertJsonStructure(['token', 'user']);
 
         $this->assertDatabaseHas('auth_identities', ['provider' => 'phone', 'identifier' => '+6281200001111']);
+
+        // kdf_salt WAJIB ada (E2E) — konsisten dgn register & Google, agar device
+        // bisa menurunkan kunci vault. Tanpa ini vault E2E tak jalan.
+        $this->assertNotNull($res->json('user.kdf_salt'));
+        $user = User::whereHas('identities', fn ($q) => $q->where('identifier', '+6281200001111'))->first();
+        $this->assertNotNull($user->kdf_salt);
     }
 
     public function test_health_ok(): void

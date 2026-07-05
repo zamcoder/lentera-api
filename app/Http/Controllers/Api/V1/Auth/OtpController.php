@@ -57,6 +57,9 @@ class OtpController extends Controller
 
             $user = User::create([
                 'handle' => Pseudonym::unique(),
+                // kdf_salt (E2E) dibuat server agar konsisten dgn register/Google —
+                // tanpa ini device tak bisa menurunkan kunci vault (kdf_salt null).
+                'kdf_salt' => random_bytes(16),
                 'role' => 'user',
                 'status' => 'active',
             ]);
