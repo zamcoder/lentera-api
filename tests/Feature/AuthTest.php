@@ -68,7 +68,8 @@ class AuthTest extends TestCase
         $user = User::factory()->create();
         $this->actingAsJwt($user)->getJson('/api/v1/me')
             ->assertOk()
-            ->assertJsonPath('user.id', $user->id);
+            ->assertJsonPath('user.id', $user->id)
+            ->assertJsonPath('user.phone', null);   // belum ada nomor terpasang
     }
 
     public function test_admin_login_requires_two_factor_then_issues_console_token(): void

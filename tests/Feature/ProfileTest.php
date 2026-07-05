@@ -49,9 +49,14 @@ class ProfileTest extends TestCase
 
         $this->actingAsJwt($user)->postJson('/api/v1/profile/phone/confirm', ['phone' => '+6281299998888', 'code' => $code])
             ->assertOk()
-            ->assertJsonPath('user.id', $user->id);
+            ->assertJsonPath('user.id', $user->id)
+            ->assertJsonPath('user.phone', '+6281299998888');            // nomor mentah ikut di payload
 
         $this->assertDatabaseHas('auth_identities', ['user_id' => $user->id, 'provider' => 'phone', 'identifier' => '+6281299998888']);
+
+        // /me juga menyertakan phone.
+        $this->actingAsJwt($user)->getJson('/api/v1/me')->assertOk()
+            ->assertJsonPath('user.phone', '+6281299998888');
     }
 
     public function test_wrong_code_is_rejected(): void

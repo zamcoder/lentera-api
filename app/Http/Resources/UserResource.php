@@ -21,6 +21,13 @@ class UserResource extends JsonResource
             'id' => $this->id,
             'handle' => $this->handle,
             'email' => $this->email,
+            // Nomor terpasang (E.164) — hidup di auth_identities (provider=phone),
+            // bukan kolom users. null bila belum ada / relasi tak dimuat.
+            'phone' => $this->whenLoaded(
+                'identities',
+                fn () => optional($this->identities->firstWhere('provider', 'phone'))->identifier,
+                null,
+            ),
             'role' => $this->role,
             'status' => $this->status,
             'totp_enabled' => (bool) $this->totp_enabled,
